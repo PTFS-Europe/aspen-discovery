@@ -31,6 +31,7 @@ class SystemVariables extends DataObject {
 	public $trackIpAddresses;
 	public $allowScheduledUpdates;
 	public $doQuickUpdates;
+	public $cookieStorageConsent;
 
 	static function getObjectStructure($context = ''): array {
 		return [
@@ -277,6 +278,13 @@ class SystemVariables extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Track IP Addresses',
 				'description' => 'Determine if IP Addresses should be tracked for each page view',
+				'default' => false,
+			],
+			'cookieStorageConsent' => [
+				'property' => 'cookieStorageConsent',
+				'type' => 'checkbox',
+				'label' => 'Require Cookie Storage Consent',
+				'description' => 'Require users to consent to cookie storage before using the catalog',
 				'default' => false,
 			],
 		];

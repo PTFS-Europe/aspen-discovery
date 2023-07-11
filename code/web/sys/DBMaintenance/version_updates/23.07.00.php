@@ -168,6 +168,14 @@ function getUpdates23_07_00(): array {
 				'updateNotificationOnboardStatus',
 			],
 		], //update_notification_onboarding_status
+		//jacob
+		'cookie_storage_consent' => [
+			'title' => 'Track consent for storage of Cookies',
+			'description' => 'Enable/disable Cookie consent banner for GDPR compliance',
+			'sql' => [
+				"ALTER TABLE system_variables add column cookieStorageConsent TINYINT(1) DEFAULT 0"
+			],
+		], //enable/disable cookie consent banner
 	];
 }
 

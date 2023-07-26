@@ -8007,6 +8007,9 @@ hr.menu {
 .header-menu-option i + span {
   margin-right: 0.5em;
 }
+#home-page-language-selection i {
+  cursor: auto;
+}
 #account-menu {
   right: unset;
   left: 0;
@@ -8029,15 +8032,36 @@ hr.menu {
   margin-bottom: 3px;
   cursor: pointer;
 }
-#aspenLanguagesMenuSection {
+.header-menu-section.heading-for-options {
+  cursor: auto;
+  color: #3174AF;
   font-weight: bold;
   margin-top: 1em;
 }
+.header-menu-section.heading-for-options i {
+  margin-left: 0.5em;
+}
 .header-menu-option.languageSelect {
-  margin-right: 2em;
+  margin-right: 1.5em;
+}
+.header-menu-option.themeSelect {
+  margin-right: 1.5em;
 }
 .header-menu-option.languageSelected {
-  margin-right: 0.5em;
+  color: #3174AF;
+}
+.header-menu-option.themeSelected {
+  color: #3174AF;
+}
+.header-menu-option.languageSelected i {
+  margin-right: 1.5em;
+  margin-left: 0.5em;
+  color: #3174AF;
+}
+.header-menu-option.themeSelected i {
+  margin-right: 1.5em;
+  margin-left: 0.5em;
+  color: #3174AF;
 }
 #library-name-header {
   font-size: 26px;
@@ -8660,6 +8684,12 @@ a.placard-link {
   border-radius: 50%;
   height: 60px;
   width: 60px;
+}
+#translationMode {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: left;
+  padding-top: 0.5em;
 }
 #home-page-search {
   background-color: #00a4e3;

@@ -90,6 +90,8 @@ class CitationBuilder {
 			'edition' => $this->getEdition(),
 		];
 		$interface->assign('mlaDetails', $mla);
+		
+
 		return 'Citation/mla.tpl';
 	}
 

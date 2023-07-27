@@ -25,7 +25,7 @@
 
 			<div id="selected-browse-label">
 				<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
-					<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers' isPublicFacing=true}
+					<label for="hideCovers" class="checkbox control-label"> {translate text='Hide Covers' isPublicFacing=true}
 						<input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
 					</label>
 				</div>
@@ -65,7 +65,7 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-							<span class="result-index">{$resultIndex+1+$startingNumber})</span>&nbsp;
+							<span class="result-index">{$resultIndex+1+$startingNumber}</span>&nbsp;
 							<a href="/MyAccount/MyList/{$list->id}" class="result-title notranslate">
 								{$list->title}
 							</a>
@@ -110,5 +110,5 @@
 		{/foreach}
 
 		{if !empty($pageLinks.all)}<div class="pagination">{$pageLinks.all}</div>{/if}
-	{/if}
+	 {/if}
 {/strip}

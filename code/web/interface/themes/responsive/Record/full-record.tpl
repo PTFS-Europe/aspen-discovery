@@ -64,12 +64,55 @@
 							</div>
 						{/if}
 					</div>
+					<button value="citeRecord" id="FavCite" class="btn btn-sm" onclick="{ldelim}$('#recordCitations').show(){rdelim}" style="background-color:#747474; color:white; border-color:#636363;" >{translate text='Generate Citations' isPublicFacing=true}</button>
 
-					<div class="row">
+					<div>
+						 <div id="recordCitations" style="display:none">
+							<button value="closeRecordCitation" class="btn btn-sm" onclick="{ldelim}$('#recordCitations').hide(){rdelim}" style="color:white; background-color:#747474; border-color:#636363"><i class="fas fa-times"></i></button>
+							{if $citationCount <1}
+								{translate text="No citations are available for this record" isPublicFacing=true}
+							{else}
+								<div style="text-align: left;">
+									{if $ama}
+										<b>{translate text="AMA Citation" isPublicFacing=true}</b>
+										<p>{include file=$ama}</p>
+									{/if}
+								</div>
+								<div style="text-align: left;">
+									{if !empty($apa)}
+										<b>{translate text="APA Citation, 7th Edition" isPublicFacing=true}</b>{if !empty($showCitationStyleGuides)}<span class="styleGuide"><a href="https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/general_format.html" target="_blank">({translate text="style guide" isPublicFacing=true})</a></span>{/if}
+										<p>{include file=$apa}</p>
+									{/if}
+								</div>
+								<div style="text-align: left;">
+									{if !empty($chicagoauthdate)}
+										<b>{translate text="Chicago / Turabian - Author Date Citation, 17th Edition" isPublicFacing=true}</b>{if !empty($showCitationStyleGuides)}<span class="styleGuide"><a href="https://www.chicagomanualofstyle.org/tools_citationguide/citation-guide-2.html" target="_blank">({translate text="style guide" isPublicFacing=true})</a></span>{/if}
+										<p>{include file=$chicagoauthdate}</p>
+									{/if}
+								</div>
+								<div style="text-align: left;">
+									{if !empty($chicagohumanities)}
+										<b>{translate text="Chicago / Turabian - Humanities (Notes and Bibliography) Citation, 17th Edition" isPublicFacing=true}</b>{if !empty($showCitationStyleGuides)}<span class="styleGuide"><a href="https://www.chicagomanualofstyle.org/tools_citationguide/citation-guide-1.html" target="_blank">({translate text="style guide" isPublicFacing=true})</a></span>{/if}
+										<p>{include file=$chicagohumanities}</p>
+									{/if}
+								</div>
+								<div style="text-align: left;">
+									{if !empty($mla)}
+										<b>{translate text="MLA Citation, 9th Edition" isPublicFacing=true}</b>{if !empty($showCitationStyleGuides)}<span class="styleGuide"><a href="https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_general_format.html" target="_blank">({translate text="style guide" isPublicFacing=true})</a></span>{/if}
+										<p>{include file=$mla}</p>
+									{/if}
+								</div>
+							{/if}
+							<div class="alert alert-warning" id="warning">
+								<strong>{translate text="Note!" isPublicFacing=true}</strong> {translate text="Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy. Citation formats are based on standards as of August 2021." isPublicFacing=true}
+							</div>
+						</div>
+					</div>
+				<div class="row">
 						<div class="col-xs-12">
 							{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
 						</div>
-					</div>
+
 				</div>
 			</div>
 

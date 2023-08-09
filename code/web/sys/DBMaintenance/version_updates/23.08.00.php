@@ -183,5 +183,16 @@ function getUpdates23_08_00(): array {
 			]
 		],
 		//add theming to cookieConsent banner
+		'move_cookieConsent_to_library_settings' => [
+			'title' => 'Move Cookie Consent toggle to library settings',
+			'description' => 'Moves the cookie consent toggle from system settings to library settings',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE system_variables DROP COLUMN cookieStorageConsent, cookiePolicyHTML",
+				"ALTER TABLE library ADD COLUMN cookieStorageConsent tinyint(1) DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN cookiePolicyHTML TEXT DEFAULT 'This body has not yet set a cookie storage policy, please check back later.'",
+				"UPDATE library set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",
+			]
+		]
 	];
 }

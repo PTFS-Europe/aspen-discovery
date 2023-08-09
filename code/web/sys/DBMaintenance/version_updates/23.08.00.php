@@ -189,7 +189,7 @@ function getUpdates23_08_00(): array {
 			'continueOnError' => true,
 			'sql' => [
 				"ALTER TABLE system_variables DROP COLUMN cookieStorageConsent",
-				"ALTER TABLE system_variables FROP COLUMN cookiePolicyHTML",
+				"ALTER TABLE system_variables DROP COLUMN cookiePolicyHTML",
 				"ALTER TABLE library ADD COLUMN cookieStorageConsent tinyint(1) DEFAULT 0",
 				"ALTER TABLE library ADD COLUMN cookiePolicyHTML TEXT",
 				"UPDATE library set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",

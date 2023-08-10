@@ -1021,9 +1021,14 @@ class SearchAPI extends Action {
 				$jsonResults[] = [
 					'id' => $record['id'],
 					'title' => isset($record['title_display']) ? $record['title_display'] : null,
-					'author' => isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'] : ''),
 					'format' => isset($record['format_' . $solrScope]) ? $record['format_' . $solrScope] : '',
 					'format_category' => isset($record['format_category_' . $solrScope]) ? $record['format_category_' . $solrScope] : '',
+					'author' => ($displayListAuthor == 0) 
+						? null
+						: (isset($record['author_display'])
+							? $record['author_display']
+							: (isset($record['author2']) ?
+							$record['author2'] : '')),
 				];
 			}
 		}

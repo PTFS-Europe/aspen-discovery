@@ -184,6 +184,7 @@ class UserListIndexer {
 		int deleted = allPublicListsRS.getInt("deleted");
 		int isPublic = allPublicListsRS.getInt("public");
 		int isSearchable = allPublicListsRS.getInt("searchable");
+		int isDisplayListAuthor = allPublicListsRS.getInt("displayListAuthor");
 		long userId = allPublicListsRS.getLong("user_id");
 		boolean indexed = false;
 		if (!fullReindex && (deleted == 1 || isPublic == 0 || isSearchable == 0)){
@@ -208,8 +209,8 @@ class UserListIndexer {
 				}else{
 					userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
 				}
-				if (displayName != null && displayName.length() > 0){
-					userListSolr.setAuthor(displayName);
+				if (displayName != null && displayName.length() > 0 && isDisplayListAuthor == 1){
+						userListSolr.setAuthor(displayName);
 				}else{
 					if (firstName == null) firstName = "";
 					if (lastName == null) lastName = "";

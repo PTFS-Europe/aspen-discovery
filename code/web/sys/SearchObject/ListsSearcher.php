@@ -231,23 +231,71 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
 	}
 
 	//TODO: Convert this to use definitions so they can be customized in admin
-	public function getFacetConfig() {
-		if ($this->facetConfig == null) {
-			$facetConfig = [];
-			$author = new LibraryFacetSetting();
-			$author->id = 1;
-			$author->multiSelect = true;
-			$author->facetName = "author_display";
-			$author->displayName = "Created By";
-			$author->numEntriesToShowByDefault = 5;
-			$author->translate = true;
-			$author->collapseByDefault = false;
-			$author->useMoreFacetPopup = true;
-			$facetConfig["author_display"] = $author;
+	// public function getFacetConfig() {
+	// 	require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 
+	// 	if ($this->facetConfig == null) {
+	// 		$facetConfig = [];
+	// 		$author = new LibraryFacetSetting();
+	// 		$author->id = 1;
+	// 		$author->multiSelect = true;
+	// 		if ($listObject->displayListAuthor == 1) {
+	// 		$author->facetName = "author_display";
+	// 		}
+	// 		$author->displayName = "Created By";
+	// 		$author->numEntriesToShowByDefault = 5;
+	// 		$author->translate = true;
+	// 		$author->collapseByDefault = false;
+	// 		$author->useMoreFacetPopup = true;
+	// 		$facetConfig["author_display"] = $author;
+	// 		$this->facetConfig = $facetConfig;
+	// 	}
+	// 	return $this->facetConfig;
+	// }
+
+	public function getFacetConfig() {
+		require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
+
+		if ($this->facetConfig == null) {
+			$facetConfig = [ ];
+
+			$authorSettings = $this->getAuthorFacetSettings();
+
+			if ($authorSettings['enabled']) {
+				$author = new LibraryFacetSetting();
+				$author->id = $authorSettings['id'];
+				$author->multiSelect = $authorSettings['multiSelect'];
+				$author->facetName = $authorSettings['facetName'];
+				$author->displayName = $authorSettings['displayName'];
+				$author->numEntriesToShowByDefault = $authorSettings['numEntriesToShowByDefault'];
+				$author->translate = $authorSettings['translate'];
+				$author->collapseByDefault = $authorSettings['collapseByDefault'];
+				$author->useMoreFacetPopup = $authorSettings['useMoreFacetPopup'];
+				$author->facetCount = $authorSettings['facetCount'];
+				$facetConfig[$authorSettings['facetName']] = $author;
+			}
 			$this->facetConfig = $facetConfig;
 		}
 		return $this->facetConfig;
+	}
+
+	public function getAuthorFacetSettings() {
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
+
+
+		return [
+			'enabled' => true,
+			'id' => 1,
+			'multiSelect' => true,
+			'facetName' =>'author_display',
+			'displayName' => 'Created By',
+			'numEntriesToShowByDefault' => 5,
+			'translate' => true,
+			'collapseByDefault' => false,
+			'useMoreFacetPopup' => true,
+			'facetCount' => $listObject->displayListAuthor == 1 ? true : false,
+		];
 	}
 
 	public function getEngineName() {

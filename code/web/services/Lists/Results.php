@@ -47,7 +47,6 @@ class Lists_Results extends ResultsAction {
 
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
-
 		$timer->logTime('Setup Search');
 
 		// Process Search
@@ -105,6 +104,7 @@ class Lists_Results extends ResultsAction {
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+
 		$interface->assign('page', $currentPage);
 
 		if ($searchObject->getResultTotal() == 0) {

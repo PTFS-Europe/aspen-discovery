@@ -16,7 +16,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-				<span class="result-index">{$resultIndex})</span>&nbsp;
+	<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
 					{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 				</a>
@@ -25,10 +25,10 @@
 				{/if}
 			</div>
 		</div>
-
 		{if !empty($summAuthor)}
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Created By" isPublicFacing=true} </div>
+				{if $displayListAuthor == 1}
 				<div class="result-value col-tn-9 notranslate">
 					{if is_array($summAuthor)}
 						{foreach from=$summAuthor item=author}
@@ -38,9 +38,14 @@
 						{$summAuthor|highlight}
 					{/if}
 				</div>
+				{else}
+					<div class="result-value col-tn-9">
+						{translate text="Anonymous"}
+					</div>
+				{/if}
 			</div>
 		{/if}
-
+ 
 		{if !empty($summNumTitles)}
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>

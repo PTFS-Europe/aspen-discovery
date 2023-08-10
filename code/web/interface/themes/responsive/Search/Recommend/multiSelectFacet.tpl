@@ -35,6 +35,7 @@
 	{/if}
 {else}
 	{* Simple list with more link to show remaining values (if any) *}
+	{if $displayListAuthor == 1}
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 		{if $smarty.foreach.narrowLoop.iteration == ($cluster.valuesToShow + 1)}
 		{* Show More link*}
@@ -54,5 +55,6 @@
 			<a href="#" onclick="AspenDiscovery.ResultsList.lessFacets('{$title}'); return false;">{translate text='less' isPublicFacing=true} ...</a>
 		</div>
 		</div>{* closes hidden div *}
+	{/if}
 	{/if}
 {/if}

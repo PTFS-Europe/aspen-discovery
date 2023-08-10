@@ -5354,6 +5354,7 @@ CREATE TABLE `user_list` (
   `created` int(11) DEFAULT NULL,
   `defaultSort` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `searchable` tinyint(1) DEFAULT '0',
+  `displayListAuthor` tinyint(1) DEFAULT '0',
   `importedFrom` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nytListModified` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),

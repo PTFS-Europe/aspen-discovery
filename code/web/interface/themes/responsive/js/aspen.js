@@ -11687,7 +11687,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		editListAction: function (){
-			$('#listDescription,#listTitle,#FavEdit,.listViewButton').hide();
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton,#FavExport,#FavExportRis').hide();
 			$('#listEditControls,#FavSave,.listEditButton').show();
 			return false;
 		},

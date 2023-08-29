@@ -210,9 +210,11 @@
 						<div class="hidethisdiv{$summId|escape} result-label col-sm-4 col-xs-12">
 							{translate text="Formats" isPublicFacing=true}
 						</div>
+
 						<div class="hidethisdiv{$summId|escape} result-value col-sm-8 col-xs-12">
-							<a onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('hidden-xs');return false;" role="button">
-								{implode subject=$relatedManifestations|@array_keys glue=", "}
+							<a onclick="$('#relatedManifestationsValue{$summId|escape}').toggleClass('hidden-xs');return false;" role="button">
+							{implode subject=$relatedManifestations|@array_keys glue=", "}
+							&nbsp;<i class="fas fa-angle-down"></i>
 							</a>
 						</div>
 					{/if}

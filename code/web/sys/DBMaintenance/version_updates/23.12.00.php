@@ -53,6 +53,33 @@ function getUpdates23_12_00(): array {
 				'ALTER TABLE  web_builder_quick_poll ADD COLUMN showResultsToPatrons TINYINT(1) DEFAULT 0',
 			],
 		], // show_quick_poll_results
-
+		//Alexander - PTFS
+		'display_list_author_control' => [
+			'title' => 'User List Author Control',
+			'description' => 'Add a setting to allow users to control whether their name appears on public lists they have created.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE  user_list ADD COLUMN displayListAuthor TINYINT(1) DEFAULT 1',
+				'ALTER TABLE user ADD COLUMN displayListAuthor TINYINT(1) DEFAULT 1',
+			],
+		],
+		'store_place_of_publication' => [
+            'title' => 'Place of Publication',
+            'description' => 'Store information about the place of publication',
+            'sql' => [
+                "CREATE TABLE  indexed_place_of_publication (
+                    id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					placeOfPublication VARCHAR(500) collate utf8_bin UNIQUE
+				) ENGINE INNODB",   
+            ],
+        ],
+        //indexed_information_places_of_publication
+        'add_place_of_publication_to_grouped_work' => [
+            'title' => 'Add Place of Publication to Grouped Work',
+            'description' => 'Add Place of Publication to Grouped Work',
+            'sql' => [
+                "ALTER TABLE grouped_work_records ADD COLUMN placeOfPublicationId INT(11) DEFAULT 1",
+			],
+		], //Add places of publication to grouped work
 	];
 }

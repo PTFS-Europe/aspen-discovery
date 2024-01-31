@@ -80,8 +80,19 @@ function getUpdates24_05_00(): array {
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN allowMasqueradeWithUsername TINYINT NOT NULL DEFAULT 1',
 			]
-		]
+		],
 		//other
+		//jacob - PTFS Europe
+		'granularShareLinks' => [
+			'title' => 'Ability to enable/disable share links per external share site',
+			'description' => 'Add the ability to enable/disable the sharing links for individual lites  (facebook/twitter etc.)',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN sharerLinkFacebook TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN sharerLinkPinterest TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN sharerLinkTwitter TINYINT(1) DEFAULT 1',
+			]
+		],
 
 
 	];

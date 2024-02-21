@@ -733,7 +733,7 @@ class ExploreMore {
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1 && $activeSection != 'summon') {
 			//Load Summon Options
-			/** @var Search_Object_SummonSearcher $summonSearcher */
+			/** @var SearchObject_SummonSearcher $summonSearcher */
 			$summonSearcher = SearchObjectFactory::initSearchObject('Summon');
 			$summonSearcher->setSearchTerms([
 				'lookfor' => $searchTerm,
@@ -743,11 +743,34 @@ class ExploreMore {
 			if ($summonResults != null) {
 				$exploreMoreOptions['sampleRecords']['summon'] = [];
 				$numMatches = $summonResults['recordCount'];
+				$facets = $summonSearcher->facetFields;
+				if ($numMatches > 0) {
+					foreach ($facets as $facet) {
+						if ($facet['displayName'] == 'ContentType') {
+							foreach ($facet->facetFields as $facetField) {
+								$facetValueStr = (string)$facetField['counts']['value'];
+								if (in_array($facetValueStr, [
+									'Magazines',
+								])) {
+									$numFacetMatches = (int)$facetField['counts'];
+									$iconName = 'summon_' . str_replace(' ', '_', strtolower($facetValueStr));
+									$exploreMoreOptions['searchLinks'][] = [
+										'label' => "$facetValueStr ({$numFacetMatches})",
+										'description' => "{$facetValueStr} in Summon related to {$searchTerm}",
+										'image' => "/interface/themes/responsive/images/{$iconName}.png",
+										'link' => '/Summon/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facet['displayName'] . ':' . $facetValueStr,
+										'openInNewWindow' => false,
+									];
+								}
+							}
+						}
+					}
+				}
 				if ($numMatches > 1) {
 					if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
-						//TODO path to image files
+						$image = '/files/origional/' . $appliedTheme->articlesDBImage;
 					} else {
-						//TODO inset path to default image
+						$image = '/interface/themes/responsive/images/summon.png';
 					}
 					$exploreMoreOptions['searchLinks'][] = [
 						'label' => translate([
@@ -760,8 +783,8 @@ class ExploreMore {
 							1 => $searchTerm,
 							'isPublicFacing' => true,
 						]),
-						//'image' => $image,
-						//'link' => TODO,
+						'image' => $image,
+						'link' => '/Summon/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
 					];
 				}

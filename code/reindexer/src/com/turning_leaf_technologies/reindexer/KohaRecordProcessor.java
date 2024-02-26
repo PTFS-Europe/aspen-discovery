@@ -396,7 +396,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download") || iType.equals("eresource")){
+					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download") || iType.equals("eresource") || iType.equals("ERESOURCE")) {
 						isEContent = true;
 					}
 				}

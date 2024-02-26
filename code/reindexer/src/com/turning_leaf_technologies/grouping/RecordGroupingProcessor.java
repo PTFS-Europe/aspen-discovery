@@ -590,6 +590,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("evideo", "movie");
 		formatsToFormatCategory.put("eaudio", "book");
 		formatsToFormatCategory.put("eaudiobook", "book");
+		formatsToFormatCategory.put("erescource", "book");
 		formatsToFormatCategory.put("ecomic", "book");
 		formatsToFormatCategory.put("audiobook", "book");
 		formatsToFormatCategory.put("atlas", "other");
@@ -1071,6 +1072,9 @@ public class RecordGroupingProcessor {
 				break;
 			case "MUSIC":
 				primaryFormat = "eMusic";
+				break;
+			case "ELECTRONIC RESOURCE":
+				primaryFormat = "eResource";
 				break;
 			default:
 				logger.error("Unhandled hoopla mediaType " + mediaType);

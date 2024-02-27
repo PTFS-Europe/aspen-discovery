@@ -400,9 +400,12 @@ class SystemAPI extends Action {
 		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/file_upload_updates.php';
 		$fileUploadUpdates = getFileUploadUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/grapesjs_updates.php';
+		$grapesJSUpdates = getGrapesJSUpdates();
+		
 		$finalBaseUpdates = getFinalBaseUpdates();
 
-		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $summonUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
+		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $summonUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates, $grapesJSUpdates);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';

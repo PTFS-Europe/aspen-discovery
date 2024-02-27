@@ -5,7 +5,7 @@ function getGrapesJSUpdates() {
 			'title' => 'Create GrapesJS module',
 			'description' => 'Setup modules for GrapesJS Integration',
 			'sql' => [
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('GrapesJS', 'grapes_js', '')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('GrapesJS', 'grapesjs', '')",
 			],
 		],
         //create web builder module
@@ -20,7 +20,7 @@ function getGrapesJSUpdates() {
 			'title' => 'GrapesJS Pages',
 			'description' => 'Setup GrapesJS Pages',
 			'sql' => [
-				"CREATE TABLE grapesjs_page (
+				"CREATE TABLE grapesjs_new_blank_page (
 					id INT(11) AUTO_INCREMENT PRIMARY KEY,
 					title VARCHAR(100) NOT NULL,
 					urlAlias VARCHAR(100),

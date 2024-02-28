@@ -553,6 +553,9 @@ AspenDiscovery.Account = (function () {
 					referer = "/MyAccount/Home";
 				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin') || (action === "SelfReg")) {
 					referer = "/MyAccount/Home";
+				} else if ((module === "GrapesJS") && (action === "NewBlankPage")) {
+					referer = "/MyAccount/Home";
+				}
 				} else {
 					referer = window.location;
 				}

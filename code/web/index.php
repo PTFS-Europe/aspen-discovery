@@ -522,6 +522,29 @@ if ($isLoggedIn) {
 			}
 			header("Location: " . $followupUrl);
 			exit();
+		} elseif ($_REQUEST['followupModule'] == 'GrapesJS') {
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (!empty($_REQUEST['pageId'])) {
+				if ($_REQUEST['followupAction'] == "NewBlankPage") {
+					require_once ROOT_DIR . '/sys/GrapesJS/NewBlankPage.php';
+					$newBlankPage = new NewBlankPage();
+					$newBlankPage->id = $_REQUEST['pageId'];
+					if ($newBlankPage->find(true)) {
+						if ($newBlankPage->urlAlias) {
+							$followupUrl = $newBlankPage->urlAlias;
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
+				} else {
+					$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+				}
+			}
+			header("Location: " . $followupUrl);
+			exit();
 		} elseif ($_REQUEST['followupModule'] == 'WebBuilder') {
 			echo("Redirecting to followup location");
 			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);

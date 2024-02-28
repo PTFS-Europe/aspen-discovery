@@ -1,4 +1,5 @@
 <?php
+/** @noinspection SqlResolve */
 function getGrapesJSUpdates() {
     return [
         'createGrapesJSModule' => [
@@ -24,9 +25,24 @@ function getGrapesJSUpdates() {
 					id INT(11) AUTO_INCREMENT PRIMARY KEY,
 					title VARCHAR(100) NOT NULL,
 					urlAlias VARCHAR(100),
-					showSidebar TINYINT(1),
+					requireLogin TINYINT(1) DEFAULT 0,
+					requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0,
 					contents MEDIUMTEXT
-				) ENGINE=INNODB",
+				) ENGINE = InnoDB",
+			],
+		],
+		'grapesjs_by_library' => [
+			'title' => 'GrapesJS add Library Scoping',
+			'description' => 'Add the ability to scope the grapesJS content',
+			'sql' => [
+				"CREATE TABLE library_grapesjs_new_blank_page (
+					id  INT(11) AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					newBlankPageId INT(11) NOT NULL,
+					INDEX libraryId(libraryId),
+					INDEX newBlankPageId(newBlankPageId)
+				) ENGINE = InnoDB",
+
 			],
 		],
     ];

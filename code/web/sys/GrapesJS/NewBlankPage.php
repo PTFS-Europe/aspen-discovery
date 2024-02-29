@@ -12,7 +12,7 @@ class NewBlankPage extends DB_LibraryLinkedObject {
 	public $requireLoginUnlessInLibrary;
 	public $teaser;
 	public $contents;
-	public $lastUpdate;
+	// public $lastUpdate;
 	private $_libraries;
 	private $_audiences;
 	private $_categories;
@@ -50,18 +50,18 @@ class NewBlankPage extends DB_LibraryLinkedObject {
 				'size' => '40',
 				'maxLength' => 100,
 			],
-			'teaser' => [
-				'property' => 'teaser',
-				'type' => 'textarea',
-				'label' => 'Teaser',
-				'description' => 'Teaser for display on portals',
-				'maxLength' => 512,
-				'hideInLists' => true,
-			],
+			// 'teaser' => [
+			// 	'property' => 'teaser',
+			// 	'type' => 'textarea',
+			// 	'label' => 'Teaser',
+			// 	'description' => 'Teaser for display on portals',
+			// 	'maxLength' => 512,
+			// 	'hideInLists' => true,
+			// ],
 			'contents' => [
 				'property' => 'contents',
-				'type' => 'markdown',
-				'label' => 'Page Contents go here',
+				'type' => 'grapesjs',
+				'label' => 'Page Contents',
 				'description' => 'The contents of the page',
 				'hideInLists' => true,
 			],
@@ -92,12 +92,12 @@ class NewBlankPage extends DB_LibraryLinkedObject {
         ];
     }
 
-	// public function getFormattedContents() {
-	// 	require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-	// 	$parsedown = AspenParsedown::instance();
-	// 	$parsedown->setBreaksEnabled(true);
-	// 	return $parsedown->parse($this->contents);
-	// }
+	public function getFormattedContents() {
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		return $parsedown->parse($this->contents);
+	}
 
 	public function insert($context = '') {
 		$this->lastUpdate = time();

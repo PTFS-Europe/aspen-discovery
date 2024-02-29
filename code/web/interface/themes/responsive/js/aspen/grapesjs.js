@@ -3,13 +3,13 @@ AspenDiscovery.GrapesJS = function () {
     return {
         editors: [],
         getBlockValuesForSource: function () {
-            var blockId = $("#id").val();
+            var portalCellId = $("#id").val();
             var sourceType = $("#sourceTypeSelect").val();
-            if (sourceType === 'markdown') {
+            if (sourceType === 'grapesjs') {
 				$('#propertyRowmarkdown').show();
-				$('#propertyRowsourceInfo').hide();
-				$("#propertyRowsourceId").hide();
-				$('#propertyRowframeHeight').hide();
+				$('#propertyRowsourceInfo').show();
+				$("#propertyRowsourceId").show();
+				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();

@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/GrapesJS/LibraryNewBlankPage.php';
 class NewBlankPage extends DB_LibraryLinkedObject {
 	// class NewBlankPage extends DataObject {
 
-    public $_table = 'grapesjs_new_blank_page';
+    public $__table = 'grapesjs_new_blank_page';
     public $id;
     public $title;
 	public $urlAlias;
@@ -178,8 +178,6 @@ class NewBlankPage extends DB_LibraryLinkedObject {
 			return true;
 		}
 	}
-	
-
 }
 
 

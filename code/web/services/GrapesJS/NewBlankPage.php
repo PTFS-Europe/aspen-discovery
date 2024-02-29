@@ -10,11 +10,7 @@ class GrapesJS_NewBlankPage extends Action {
 
 		global $interface;
 
-		if (isset($_REQUEST['id'])) {
-			$id = strip_tags($_REQUEST['id']);
-		} else {
-			$id = '';
-		}
+		$id = strip_tags($_REQUEST['id']);
 		$this->newBlankPage = new NewBlankPage();
 		$this->newBlankPage->id = $id;
 
@@ -46,7 +42,7 @@ class GrapesJS_NewBlankPage extends Action {
 		$interface->assign('contents', $this->newBlankPage->getFormattedContents());
 		$interface->assign('title', $title);
 
-		$this->display('new-blank-page.tpl', $title, '', false);
+		$this->display('new-blank-page-two.tpl', $title, '', false);
 	}
 
 	function canView(): bool {

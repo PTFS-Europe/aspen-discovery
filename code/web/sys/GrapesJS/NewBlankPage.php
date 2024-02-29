@@ -61,7 +61,7 @@ class NewBlankPage extends DB_LibraryLinkedObject {
 			'contents' => [
 				'property' => 'contents',
 				'type' => 'markdown',
-				'label' => 'Page Contents',
+				'label' => 'Page Contents go here',
 				'description' => 'The contents of the page',
 				'hideInLists' => true,
 			],
@@ -92,12 +92,12 @@ class NewBlankPage extends DB_LibraryLinkedObject {
         ];
     }
 
-	public function getFormattedContents() {
-		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-		$parsedown = AspenParsedown::instance();
-		$parsedown->setBreaksEnabled(true);
-		return $parsedown->parse($this->contents);
-	}
+	// public function getFormattedContents() {
+	// 	require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+	// 	$parsedown = AspenParsedown::instance();
+	// 	$parsedown->setBreaksEnabled(true);
+	// 	return $parsedown->parse($this->contents);
+	// }
 
 	public function insert($context = '') {
 		$this->lastUpdate = time();

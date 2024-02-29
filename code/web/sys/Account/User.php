@@ -3623,11 +3623,15 @@ class User extends DataObject {
 
 		if (array_key_exists('GrapesJS', $enabledModules)) {
 			$sections['grapesjs'] = new AdminSection('GrapesJS');
-			$sections['grapesjs']->addAction(new AdminAction('New Blank Page', 'Create new blank page with GrapesJS Web Builder', '/GrapesJS/NewBlankPage'), [
+			$sections['grapesjs']->addAction(new AdminAction('New Blank Page', 'Create new blank page with GrapesJS Web Builder', '/GrapesJS/NewBlankPages'), [
 				'Administer All Basic Pages',
 				'Administer Library Basic Pages',
 			]);
 			$sections['grapesjs']->addAction(new AdminAction('New Page from Template', 'Create new page with GrapesJS Web Builder from a saved template', '/GrapesJS/NewTemplatePage'), [
+				'Administer All Basic Pages',
+				'Administer Library Basic Pages',
+			]);
+			$sections['grapesjs']->addAction(new AdminAction('TEMP PAGE', 'Create new page with GrapesJS Web Builder from a saved template', '/GrapesJS/NewBlankPage'), [
 				'Administer All Basic Pages',
 				'Administer Library Basic Pages',
 			]);

@@ -48,7 +48,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	/**@var int */
 	protected $maxTopics = 1;
 	protected $groupFilters = array();
-	protected $rangeFilters = array();
 	protected $openAccessFilter = false;
 	protected $expand = false;
 	protected $sortOptions = array();
@@ -58,6 +57,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $defaultSort = 'relevance';
 	protected $query;
 	protected $filters = array();
+	protected $rangeFilters = array();
 
 	/**
 	 * @var int
@@ -90,7 +90,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Language,or,1,30',
 		'DatabaseName,or,1,30',
 		'SourceType,or,1,30',	
+		//'isPeerReviewed,and,1,30',
+		//'isScholarly,and,1,30',
 	];
+
+	protected $limits = [
+		'IsPeerReviewed,or,1,30',
+		'IsScholarly,or,1,30',
+	];
+
+	protected $rangeFacets = [
+		'PublicationDate,0000:9999',
+	];
+
+	protected $limitList = [];
+	protected $limitFields;
+
 
 	protected $facetFields;
 
@@ -233,7 +248,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//Fetch specific records
 			's.fids' =>$this->idsToFetch,
 			//Side facets to filter by
-			's.ff' =>$this->facets,
+			's.ff' =>array_merge($this->facets, $this->limits),
 			//Filters that are active - from side facets
 			's.fvf' => $this->getSummonFilters(),
 			//Default 1
@@ -242,6 +257,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.fvgf' => $this->groupFilters,
 			//Filters
 			's.rf' => $this->rangeFilters,
+			//Range Facets
+			's.rff' => $this->rangeFacets,
 			//Order results
 			's.sort' => $this->getSort(),
 			//False by default
@@ -275,9 +292,29 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->page = $recordData['query']['pageNumber'];
 				$this->resultsTotal = $recordData['recordCount'];
 				$this->filters = $recordData['query']['facetValueFilters'];
-				$this->facetFields= $recordData['facetFields'];	
+				$splitFacets = $this->splitFacets($recordData['facetFields']);
+				$recordData['rangeFacetFields'] = isset($recordData['rangeFacetFields']) && is_array($recordData['rangeFacetFields']) ? $recordData['rangeFacetFields'] : [];
+				$this->facetFields = array_merge($splitFacets['facetFields'], $recordData['rangeFacetFields']);	
+				$this->limitFields = $splitFacets['limitFields'];
 			}
-		return $recordData;
+			return $recordData;
+	}
+	
+	public function splitFacets($combinedFacets) {
+		$splitFacets = [];
+		foreach($combinedFacets as $facet) {
+			foreach ($this->facets as $facetName) {
+				if (strpos($facetName, $facet['displayName']) !== false) {
+					$splitFacets['facetFields'][] = $facet;
+				}
+			}
+			foreach ($this->limits as $limitName) {
+				if (strpos($limitName, $facet['displayName']) !== false) {
+					$splitFacets['limitFields'][] = $facet;
+				}
+			}
+		}
+		return $splitFacets;
 	}
 
     /**
@@ -434,6 +471,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				//results array does not return human readable option
 				$parts = preg_split('/(?=[A-Z])/', $facetId, -1, PREG_SPLIT_NO_EMPTY);
 				$displayName = implode(' ', $parts);
+				if ($facetId == 'PublicationDate') {
+					$facetId = 'publishDate';
+				}
 				$availableFacets[$facetId] = [
 					'collapseByDefault' => true,
 					'multiSelect' =>true,
@@ -443,6 +483,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				if ($facetId == 'ContentType') {
 					$availableFacets[$facetId]['collapseByDefault'] = false;
 				}
+
+				if ($facetId == 'IsScholarly' || $facetId == 'IsPeerReviewed') {
+					$availableFacets[$facetId]['multiSelect'] = false;
+				}
+				
 				$list = [];
 				foreach ($facetField['counts'] as $value) {
 					$facetValue = $value['value'];
@@ -465,6 +510,43 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
 		}
 		return $availableFacets;
+	}
+
+	// public function createLimitList($recordData) {
+	// 	foreach($recordData['facetFields'] as $facet) {
+	// 		//foreach($facet as $limit)
+	// 		if(in_array($facet['displayName'], $this->limitOptions)) {
+	// 			$this->limits[$facet['displayName']] = $facet['hasAppliedValue'];
+	// 		}
+	// 	}
+	// 	return;
+	// }
+
+	public function getLimitList() {
+
+		$availableLimits=[];
+		if (isset($this->limitFields)){
+			foreach($this->limitFields as $limitOption){
+				$limitId = $limitOption['displayName'];
+				$parts = preg_split('/(?=[A-Z])/', $limitId, -1, PREG_SPLIT_NO_EMPTY);
+				$displayName = implode(' ', $parts);
+			
+				foreach($limitOption['counts'] as $value){
+					if ($value['value'] == 'true') {
+						$isApplied = $value['isApplied'];
+						$availableLimits[$limitId] = [
+							'display' => $displayName,
+							'value' => $limitId,
+							'isApplied' => ($this->limiters['limitId']) == 'true' ? 1 : 0,
+							'url' => $this->renderLinkWithLimiter($limitId),
+							'removalUrl' => $this->renderLinkWithoutLimiter($limitId),
+						];
+					}
+				}
+			
+			}
+		}
+		return $availableLimits;
 	}
 
 	//Retreive a specific record - used to retreive bookcovers
@@ -491,6 +573,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			} else {
 				$encodedValue = urlencode($value); 
 				$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
+			}
+		}
+		$limitList = $this->getLimitList();
+		foreach ($limitList as $limiter => $limiterOptions) {
+			if ($limiterOptions['isApplied']) {
+				$this->filters[] = urlencode($limiter) . ',true,';
 			}
 		}
 		return $this->filters;

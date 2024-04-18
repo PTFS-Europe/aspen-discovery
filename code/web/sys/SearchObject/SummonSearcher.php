@@ -90,7 +90,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Language,or,1,30',
 		'DatabaseName,or,1,30',
 		'SourceType,or,1,30',	
-		//'isPeerReviewed,and,1,30',
+		//'IsPeerReviewed,and,1,30',
 		//'isScholarly,and,1,30',
 	];
 
@@ -535,9 +535,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					if ($value['value'] == 'true') {
 						$isApplied = $value['isApplied'];
 						$availableLimits[$limitId] = [
-							'display' => $displayName,
+							'display' => $displayName." (".$value['count'].")",
 							'value' => $limitId,
-							'isApplied' => ($this->limiters['limitId']) == 'true' ? 1 : 0,
+							'isApplied' => ($this->limiters[$limitId]) == 'y' ? 1 : 0,
 							'url' => $this->renderLinkWithLimiter($limitId),
 							'removalUrl' => $this->renderLinkWithoutLimiter($limitId),
 						];
@@ -547,6 +547,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
 		}
 		return $availableLimits;
+	}
+
+	public function createSearchLimits() {
+		foreach ($this->limiters as $limiter => $limiterOptions) {
+			if ($this->limiters[$limiter] == 'y') {
+				$this->limitList[$limiter] = $limiterOptions;
+			}
+		}
+		return $this->limitList;
 	}
 
 	//Retreive a specific record - used to retreive bookcovers
@@ -564,6 +573,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Compile filter options chosen in side facets and add to filter array to be passed in via options array
 	public function getSummonFilters() {
 		$this->filters = array();
+		$this->createSearchLimits();
+		if (isset($this->limitList) && isset($this->filterList)) {
+			$this->filterList = array_merge($this->limitList, $this->filterList);
+		}
 		foreach ($this->filterList as $key => $value) {
 			if (is_array($value)) {
 				foreach ($value as $val) {
@@ -573,12 +586,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			} else {
 				$encodedValue = urlencode($value); 
 				$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
-			}
-		}
-		$limitList = $this->getLimitList();
-		foreach ($limitList as $limiter => $limiterOptions) {
-			if ($limiterOptions['isApplied']) {
-				$this->filters[] = urlencode($limiter) . ',true,';
 			}
 		}
 		return $this->filters;
@@ -624,6 +631,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$settings = $this->getSettings();
 		$this->startQueryTimer();
 		$query = array();
+		// foreach ($this->limiters as $limiter => $limiterOptions) {
+		// 	if ($limiterOptions['isApplied']) {
+		// 		$this->limitList[] = $limiterOptions[];
+		// 	}
 		$options = $this->getOptions();
 		$this->searchTerms;
 		foreach ($options as $key => $value) {

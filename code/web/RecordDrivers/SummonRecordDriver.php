@@ -24,19 +24,25 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getBookcoverUrl($size='large', $absolutePath = false) {
+		// require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
+		global $library;
+
 		global $configArray;
 		if ($size == 'small' || $size == 'medium'){
 			$sizeInArray = 'thumbnail_m';
 		}else{
 			$sizeInArray = 'thumbnail_l';
 		}
-		if (!empty($this->record[$sizeInArray][0])) {
-			$imageDimensions = getimagesize($this->record[$sizeInArray][0]);
-			if ($sizeInArray == 'thumbnail_m' && $imageDimensions[0] > 10) {
-				return $this->record[$sizeInArray][0];
-			} elseif ($sizeInArray == 'thumbnail_l' && $imageDimensions[0] > 10) {
-				return $this->record[$sizeInArray][0];
-			} 
+
+		if ($library->showAvailableCoversInSummon) {
+			if(!empty($this->record[$sizeInArray][0])){
+				$imagePath = $this->record[$sizeInArray][0];
+
+				$imageDimensions = getImageSize($imagePath);
+				if($imageDimensions[0] > 10){
+					return $imagePath;
+				}
+			}
 		}
 		if ($absolutePath) {
 			$bookCoverUrl = $configArray['Site']['url'];

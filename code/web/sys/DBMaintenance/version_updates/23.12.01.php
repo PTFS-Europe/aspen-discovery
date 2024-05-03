@@ -34,5 +34,6 @@ function getUpdates23_12_01(): array {
 				"ALTER TABLE layout_settings ADD COLUMN showExploreMoreOptions TINYINT DEFAULT '1'",
 			]
 		],//control_whether_the_explore_more_box_is_displayed
+
 	];
 }

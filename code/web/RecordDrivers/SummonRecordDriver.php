@@ -241,11 +241,10 @@ class SummonRecordDriver extends RecordInterface {
 			}
 		} else {
 			$title='Unknown Title';
-		}
-		return $title;
+		} return $title;
 	}
 
-	/**
+	/** 
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.
 	 *

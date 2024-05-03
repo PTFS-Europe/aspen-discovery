@@ -164,6 +164,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			//Convert formats from print to eContent version
 			for (String format : printFormats) {
 				if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript") || format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit") || format.equalsIgnoreCase("eResource")) {
+
 						econtentItem.setFormat("eBook");
 						econtentItem.setFormatCategory("eBook");
 						econtentRecord.setFormatBoost(10);

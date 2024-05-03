@@ -1951,8 +1951,9 @@ abstract class MarcRecordProcessor {
 				printFormats.add("DVD");
 			}else if (titleMedium.contains("erescource") || (titleMedium.contains("ELECTRONIC RESOURCES") || (titleMedium.contains("Electronic resources")))){
 				printFormats.add("eResource");
-
+      }
 		}
+      
 		String titleForm = MarcUtil.getFirstFieldVal(record, "245k");
 		if (titleForm != null){
 			titleForm = titleForm.toLowerCase();

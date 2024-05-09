@@ -452,7 +452,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove old last list used
 		try {
 			//Get list of libraries that want lastUsedList cleared
-			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deleteLastListUsedEntriesOlderThan from library where deleteOldLastListUsedEntries === 1");
+			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deleteOldLastListUsedEntries from library where deleteOldLastListUsedEntries > 0");
 			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId from location where libraryId = ?");
 			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("DELETE from user where lastListUsed = ?");
 			
@@ -461,7 +461,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			long numDeletions = 0;
 			while (librariesListRS.next()) {
 				long libraryId = librariesListRS.getLong("libraryId");
-				long daysToPreserve = librariesListRS.getLong("deleteLastUsedListEntriesOlderThan");
+				long daysToPreserve = librariesListRS.getLong("deleteLastUsedListEntries");
 
 				libraryLocationsStmt.setLong(1, libraryId);
 
@@ -475,10 +475,9 @@ public class DatabaseCleanup implements IProcessHandler {
 				}
 
 				if (libraryLocations.length() > 0){
-					PreparedStatement lastListUsedEntiresToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed from user where user.homeLocationId IN (" + libraryLocations + ") and listAccessedDate < ?");
-
 					long now = new Date().getTime()/1000;
-					long earliestDateToPreserve = now - (daysToPreserve * 24 * 60 * 60);
+					long earliestDateToPreserve = now - (14 * 24 * 60 * 60);
+					PreparedStatement lastListUsedEntiresToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed from user where user.homeLocationId IN (" + libraryLocations + ") and lastListUsed < ?");
 					lastListUsedEntiresToDeleteStmt.setLong(1, earliestDateToPreserve);
 
 					ResultSet lastListUsedEntriesToDeleteRS = lastListUsedEntiresToDeleteStmt.executeQuery();

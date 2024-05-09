@@ -27,6 +27,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldCachedObjects(dbConn, logger, processLog);
 		removeOldIndexingData(dbConn, logger, processLog);
 		removeOldExternalRequests(dbConn, logger, processLog);
+		removeOldLastListUsed(dbConn, logger, processLog);
 		optimizeSearchTable(dbConn, logger, processLog);
 		optimizeSessionsTable(dbConn, logger, processLog);
 
@@ -447,4 +448,55 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	private void removeOldLastListUsed(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Remove old last list used
+		try {
+			//Get list of libraries that want lastUsedList cleared
+			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deleteLastListUsedEntriesOlderThan from library where deleteOldLastListUsedEntries === 1");
+			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId from location where libraryId = ?");
+			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("DELETE from user where lastListUsed = ?");
+			
+			ResultSet librariesListRS = librariesListStmt.executeQuery();
+
+			long numDeletions = 0;
+			while (librariesListRS.next()) {
+				long libraryId = librariesListRS.getLong("libraryId");
+				long daysToPreserve = librariesListRS.getLong("deleteLastUsedListEntriesOlderThan");
+
+				libraryLocationsStmt.setLong(1, libraryId);
+
+				ResultSet libraryLocationsRS = libraryLocationsStmt.executeQuery();
+				StringBuilder libraryLocations = new StringBuilder();
+				while (libraryLocationsRS.next()) {
+					if (libraryLocations.length() > 0){
+						libraryLocations.append(", ");
+					}
+					libraryLocations.append(libraryLocationsRS.getString("locationId"));
+				}
+
+				if (libraryLocations.length() > 0){
+					PreparedStatement lastListUsedEntiresToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed from user where user.homeLocationId IN (" + libraryLocations + ") and listAccessedDate < ?");
+
+					long now = new Date().getTime()/1000;
+					long earliestDateToPreserve = now - (daysToPreserve * 24 * 60 * 60);
+					lastListUsedEntiresToDeleteStmt.setLong(1, earliestDateToPreserve);
+
+					ResultSet lastListUsedEntriesToDeleteRS = lastListUsedEntiresToDeleteStmt.executeQuery();
+					while (lastListUsedEntriesToDeleteRS.next()) {
+						deleteLastListUsedStmt.setLong(1, lastListUsedEntriesToDeleteRS.getLong(1));
+						int numUpdates = deleteLastListUsedStmt.executeUpdate();
+						processLog.addUpdates(numUpdates);
+						numDeletions += numUpdates;
+					}
+					lastListUsedEntriesToDeleteRS.close();
+					lastListUsedEntiresToDeleteStmt.close();
+				}
+			}
+			librariesListRS.close();
+			librariesListStmt.close();
+			processLog.addNote("Removed " + numDeletions + " expired last list used entries");
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to remove expired last useed list entries.", e);
+		}
+	}
 }

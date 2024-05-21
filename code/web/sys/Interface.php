@@ -410,6 +410,13 @@ class UInterface extends Smarty {
 
 			$this->assign('browseStyle', $browseCategoryLayoutStyle);
 
+			$accessibleBrowseCategories = 0;
+			if($theme->accessibleBrowseCategories) {
+				$accessibleBrowseCategories = $theme->accessibleBrowseCategories;
+			}
+
+			$this->assign('accessibleBrowseCategories', $accessibleBrowseCategories);
+
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
@@ -1021,6 +1028,13 @@ class UInterface extends Smarty {
 			}
 
 			$this->assign('browseStyle', $browseCategoryLayoutStyle);
+
+			$accessibleBrowseCategories = 0;
+			if($theme->accessibleBrowseCategories) {
+				$accessibleBrowseCategories = $theme->accessibleBrowseCategories;
+			}
+
+			$this->assign('accessibleBrowseCategories', $accessibleBrowseCategories);
 
 			//Get Logo
 			$logoName = null;

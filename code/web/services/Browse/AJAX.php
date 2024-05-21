@@ -466,6 +466,7 @@ class Browse_AJAX extends Action {
 		$browseMode = $this->setBrowseMode();
 
 		global $interface;
+		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
 		$interface->assign('browseCategoryId', $this->textId);
 		$result['success'] = true;
 		$result['textId'] = $this->textId;
@@ -497,14 +498,21 @@ class Browse_AJAX extends Action {
 			$records[] = $interface->fetch('Browse/noResults.tpl');
 		}
 
-		$result['records'] = implode('', $records);
+		if($accessibleBrowseCategories == '1' || $accessibleBrowseCategories == 1) {
+			$result['records'] = $records;
+		} else {
+			$result['records'] = implode('', $records);
+		}
+
 		$result['numRecords'] = count($records);
 
 		return $result;
 	}
 
-	private function getBrowseCategoryResults($pageToLoad = 1) {
+	function getBrowseCategoryResults($pageToLoad = 1) {
 		$lastPage = false;
+		global $interface;
+		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
 		if ($this->textId == 'system_recommended_for_you') {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
@@ -634,7 +642,7 @@ class Browse_AJAX extends Action {
 						$browseCategoryRatingsMode = $browseCategoryGroup->browseCategoryRatingsMode; // Try Location Setting
 
 						// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-						if ($browseCategoryRatingsMode == 2) {
+						if ($browseCategoryRatingsMode == 2 && ($accessibleBrowseCategories == '0' || $accessibleBrowseCategories == 0)) {
 							$records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 						}
 					}
@@ -658,7 +666,12 @@ class Browse_AJAX extends Action {
 					}
 				}
 
-				$result['records'] = implode('', $records);
+				if($accessibleBrowseCategories == '1' || $accessibleBrowseCategories == 1) {
+					$result['records'] = $records;
+				} else {
+					$result['records'] = implode('', $records);
+				}
+
 				$result['numRecords'] = count($records);
 
 			}
@@ -720,6 +733,14 @@ class Browse_AJAX extends Action {
 		return $this->textId;
 	}
 
+	function setBrowseCategory($category) {
+		if($category) {
+			$this->browseCategory = $category;
+		}
+
+		return $this->browseCategory;
+	}
+
 	/** @noinspection PhpUnused */
 	function getBrowseCategoryInfo($textId = null) {
 		$textId = $this->setTextId($textId);
@@ -740,6 +761,7 @@ class Browse_AJAX extends Action {
 		]);
 
 		// Get Any Subcategories for the subcategory menu
+		$_REQUEST['textId'] = $this->textId;
 		$response['subcategories'] = $this->getSubCategories();
 
 		// If this category has subcategories, get the results of a sub-category instead.
@@ -940,14 +962,21 @@ class Browse_AJAX extends Action {
 	 * @return string
 	 */
 	function getSubCategories() {
+		global $interface;
+		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
 		require_once ROOT_DIR . '/services/API/SearchAPI.php';
 		$searchAPI = new SearchAPI();
-		$result = $searchAPI->getSubCategories();
+		$result = $searchAPI->getSubCategories(null, $accessibleBrowseCategories == '1');
 		if ($result['success']) {
 			$subCategories = $result['subCategories'];
 			if (!empty($subCategories)) {
-				global $interface;
 				$interface->assign('subCategories', $subCategories);
+
+				if($accessibleBrowseCategories == '1') {
+					$interface->assign('parentTextId', $result['parentTextId']);
+					return $interface->fetch('Search/browse-sub-category-tab.tpl');
+				}
+
 				return $interface->fetch('Search/browse-sub-category-menu.tpl');
 			}
 		}

@@ -7,6 +7,8 @@ class Campaign extends DataObject {
     public $name;
     public $milestoneOne;
     public $milestoneTwo;
+    public $startDate;
+    public $endDate;
 
     public static function getObjectStructure($context = ''): array {
         $milestoneList = Milestone::getMilestoneList();
@@ -47,6 +49,18 @@ class Campaign extends DataObject {
                     ],
                 ],
             ],
-        ];
+                'startDate' => [
+                    'property' => 'startDate',
+                    'type' => 'date',
+                    'label' => 'Campaign Start Date',
+                    'description' => 'The date the campaign starts',
+                ],
+                'endDate' => [
+                    'property' => 'endDate',
+                    'type' => 'date',
+                    'label' => 'Campaign End Date',
+                    'description' => 'The date the campaign ends',
+                ],
+         ];
     }
 }

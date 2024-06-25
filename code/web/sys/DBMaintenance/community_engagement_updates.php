@@ -45,5 +45,23 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE campaign ADD COLUMN endDate INT NULL",
             ],
         ],
+        'add_reward_to_milestone' => [
+            'title' => 'Add Reward to Milestone',
+            'description' => 'Add reward to milestone',
+            'sql' => [
+                "ALTER TABLE milestone ADD COLUMN reward INT(11) DEFAULT -1",
+            ],
+        ],
+        'add_a_rewards_table' => [
+            'title' => 'Add a Rewards Table',
+            'description' => 'Add a table to store rewards',
+            'sql' => [
+                "CREATE TABLE reward (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    rewardType INT(11) DEFAULT -1
+                ) ENGINE = InnoDB",
+            ],
+        ],
     ];
 }

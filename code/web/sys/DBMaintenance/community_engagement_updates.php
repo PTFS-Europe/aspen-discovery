@@ -15,7 +15,7 @@ function getCommunityEngagementUpdates() {
             'sql' => [
                 "CREATE TABLE campaign (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL
+                    name VARCHAR(100) NOT NULL DEFAULT ''
                 ) ENGINE = InnoDB",
             ],
         ],
@@ -25,7 +25,7 @@ function getCommunityEngagementUpdates() {
             'sql' => [
                 "CREATE TABLE milestone (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL
+                    name VARCHAR(100) NOT NULL DEFAULT ''
                 ) ENGINE = InnoDB",
             ],
         ],
@@ -58,9 +58,34 @@ function getCommunityEngagementUpdates() {
             'sql' => [
                 "CREATE TABLE reward (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL,
+                    name VARCHAR(100) NOT NULL DEFAULT '',
                     rewardType INT(11) DEFAULT -1
                 ) ENGINE = InnoDB",
+            ],
+        ],
+        'add_reward_type_table' => [
+            'title' => 'Add a Reward Type Table',
+            'description' => 'Add a table to store reward types',
+            'sql' => [
+                "CREATE TABLE reward_type (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    rewardType INT(11) DEFAULT -1
+                ) ENGINE = InnoDB",
+            ],
+        ],
+        'alter_reward_type_column_type' => [
+            'title' => 'Alter Reward Type Column',
+            'description' => 'Alter the data type of the reward type column',
+            'sql' => [
+                "ALTER TABLE reward_type MODIFY COLUMN rewardType VARCHAR(100) NOT NULL",
+            ],
+        ],
+        'alter_reward_type_table' => [
+            'title' => 'Alter Reward Type Column',
+            'description' => 'Alter the data type of the reward type column',
+            'sql' => [
+                "ALTER TABLE reward_type DROP COLUMN rewardType",
+                "ALTER TABLE reward_type ADD COLUMN name VARCHAR(100) NOT NULL DEFAULT ''",
             ],
         ],
     ];

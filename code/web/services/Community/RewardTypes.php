@@ -1,17 +1,17 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/Community/Reward.php';
+require_once ROOT_DIR . '/sys/Community/RewardType.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Community_Rewards extends ObjectEditor {
-
+class Community_RewardTypes extends ObjectEditor {
+    
     function getObjectType(): string {
-		return 'Reward';
+		return 'RewardType';
 	}
 
 	function getToolName(): string {
-		return 'Rewards';
+		return 'RewardTypes';
 	}
 
     function getModule(): string {
@@ -19,11 +19,11 @@ class Community_Rewards extends ObjectEditor {
 	}
 
     function getPageTitle(): string {
-		return 'Rewards';
+		return 'Reward Types';
 	}
 
     function getAllObjects($page, $recordsPerPage): array {
-        $object = new Reward();
+        $object = new RewardType();
         $object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -35,13 +35,12 @@ class Community_Rewards extends ObjectEditor {
 		return $objectList;
     }
 
-     
-	function getDefaultSort(): string {
+    function getDefaultSort(): string {
 		return 'name asc';
 	}
 
 	function getObjectStructure($context = ''): array {
-		return Reward::getObjectStructure($context);
+		return RewardType::getObjectStructure($context);
 	}
 
     function getPrimaryKeyColumn(): string {
@@ -52,6 +51,7 @@ class Community_Rewards extends ObjectEditor {
 		return 'id';
 	}
 
+    
     function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
@@ -64,7 +64,7 @@ class Community_Rewards extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#community', 'Community');
-		$breadcrumbs[] = new Breadcrumb('/Community/Rewards', 'Rewards');
+		$breadcrumbs[] = new Breadcrumb('/Community/RewardTypes', 'RewardTypes');
 		return $breadcrumbs;
 	}
 
@@ -84,5 +84,4 @@ class Community_Rewards extends ObjectEditor {
 			'Administer All Basic Pages',
 		]);
 	}
-
 }

@@ -1,4 +1,5 @@
 <?php
+require_once ROOT_DIR . '/sys/Community/RewardType.php';
 
 class Reward extends DataObject {
     public $__table = 'reward';
@@ -7,6 +8,7 @@ class Reward extends DataObject {
     public $rewardType;
 
     public static function getObjectStructure($context = ''): array {
+        $rewardTypeList = RewardType::getRewardTypeList();
         return [
             'id' => [
                 'property' => 'id',
@@ -15,7 +17,7 @@ class Reward extends DataObject {
                 'description' => 'The unique id',
             ],
             'name' => [
-                'property' => 'rewardName',
+                'property' => 'name',
                 'type' => 'text',
                 'label' => 'Reward',
                 'maxLength' => 100,
@@ -24,8 +26,9 @@ class Reward extends DataObject {
             'rewardType' => [
                 'property' => 'rewardType',
                 'type' => 'enum',
-                'label' => 'rewardType',
+                'label' => 'Reward Type',
                 'description' => 'The type of reward',
+                'values' => $rewardTypeList,
             ],
         ];
     }

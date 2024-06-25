@@ -29,5 +29,13 @@ function getCommunityEngagementUpdates() {
                 ) ENGINE = InnoDB",
             ],
         ],
+        'add_milestones_to_campaign' => [
+            'title' => 'Add Milestones to Campaign',
+            'description' => 'Add milestone selection to campaigns',
+            'sql' => [
+                "ALTER TABLE campaign ADD COLUMN milestoneOne INT(11) DEFAULT -1",
+                "ALTER TABLE campaign ADD COLUMN milestoneTwo INT(11) DEFAULT -1",
+            ]
+        ]
     ];
 }

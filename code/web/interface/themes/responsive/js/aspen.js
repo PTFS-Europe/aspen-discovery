@@ -8243,6 +8243,11 @@ AspenDiscovery.Account = (function () {
 					return AspenDiscovery.Account.markILSMessageAsUnread(id);
 				}, false);
 			}
+		},
+		seeCampaigns: function () {
+			var url = Globals.path + "/MyAccount/AJAX?method=seeAvailableCampaigns";
+			document.location.href = url;
+			return false;
 		}
 	};
 }(AspenDiscovery.Account || {}));

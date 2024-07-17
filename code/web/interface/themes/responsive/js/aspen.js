@@ -15860,8 +15860,8 @@ AspenDiscovery.CookieConsent = (function() {
                     UserOverdrive:1,
                     UserPalaceProject:1,
                     UserSideLoad:1,
-                    UserCloudLibrary:0,
-                    UserWebsite:0,
+                    UserCloudLibrary:1,
+                    UserWebsite:1,
                 };
             } else if (props == 'essential') {
                 var cookieString = {
@@ -15948,8 +15948,6 @@ AspenDiscovery.CookieConsent = (function() {
 			};
             $.getJSON(url, params,
                 function(data) {
-                    console.log('data success:', data.success);
-                    console.log('DATA:', data);
                     if(data.success){
                         AspenDiscovery.showMessage("Manage Your Cookie Preferences", data.modalBody);
                     } else {

@@ -16,7 +16,6 @@ function getUpdates24_08_00(): array {
 
 		//kirstien - ByWater
 
-		//kodi - ByWater
 
 		//katherine - ByWater
 
@@ -62,6 +61,7 @@ function getUpdates24_08_00(): array {
 				"ALTER TABLE user ADD COLUMN userCookiePreferenceExternalSearchServices TINYINT(1) DEFAULT 0",
 			],
 		], //add_user_tracking_preferences_for_all_external_search_services
+
 
 		//pedro - PTFS-Europe
 

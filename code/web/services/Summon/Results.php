@@ -71,7 +71,9 @@ class Summon_Results extends ResultsAction {
 		$interface->assign('filterList', $appliedFacets);
 		$limitList = $searchObject->getLimitList();
 		$interface->assign('limitList', $limitList);
-		$facetSet = $searchObject->getFacetSet();
+		$facetSetOne = $searchObject->getFacetSet();
+		$facetSetTwo = $searchObject->getRangeFacetSet();
+		$facetSet = array_merge($facetSetOne, $facetSetTwo);
 		$interface->assign('sideFacetSet', $facetSet);
 
 		//Figure out which counts to show.

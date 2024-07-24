@@ -57,7 +57,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $defaultSort = 'relevance';
 	protected $query;
 	protected $filters = array();
-	protected $rangeFilters = array();
+	// protected $rangeFilters = array();
+	protected $rangeFilterList = array();
 
 	/**
 	 * @var int
@@ -98,6 +99,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	];
 
 	protected $rangeFacets = [
+		'PublicationDate,1981:1990,1991:2000',
 	];
 
 	protected $limitList = [];
@@ -105,6 +107,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 
 	protected $facetFields;
+	protected $rangeFacetFields;
 
     public function __construct() {
         //Initialize properties with default values
@@ -255,7 +258,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//Range Facets
 			's.rff' => $this->rangeFacets,
 			//Filters
-			's.rf' => $this->rangeFilters,
+			's.rf' => $this->getSummonRangeFilters(),
 			//Order results
 			's.sort' => $this->getSort(),
 			//False by default
@@ -275,6 +278,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//allows access to records
 			's.role' =>  'authenticated',			
 		);
+	
 		return $options;
 	}
 
@@ -292,6 +296,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$splitFacets = $this->splitFacets($recordData['facetFields']);
 				$this->facetFields = $splitFacets['facetFields'];
 				$this->limitFields = $splitFacets['limitFields'];
+				$this->rangeFacetFields = $recordData['rangeFacetFields'];
 			}
 			return $recordData;
 	}
@@ -506,6 +511,44 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $availableFacets;
 	}
 
+	public function getRangeFacetSet() {
+		$availableRangeFacets = [];
+		$this->rangeFilters = [];
+		if (isset($this->rangeFacetFields)) {
+			foreach ($this->rangeFacetFields as $rangeFacetField) {
+				$rangeFacetId = $rangeFacetField['displayName'];
+				$displayName = preg_replace('/([a-z])([A-Z])/', '$1 $2', $rangeFacetId);
+				$availableRangeFacets[$rangeFacetId] = [
+					'collapseByDefault' => true,
+					'multiSelect' => true,
+					'label' => $displayName,
+					'valuesToShow' => 5,
+				];
+
+				$list = [];
+				foreach ($rangeFacetField['counts'] as $value) {
+					$rangeFacetValue = $value['range'];
+					$isApplied = array_key_exists($rangeFacetId, $this->rangeFilterList) && in_array($rangeFacetValue, $this->rangeFilterList[$rangeFacetId]);
+					$rangeFacetSettings = [
+						'value' => $rangeFacetValue['range'],
+						'display' => $rangeFacetValue['minValue'] . '-' . $rangeFacetValue['maxValue'], 
+						'count' => $value['count'],
+						// 'isApplied' => $value['isApplied'],
+					];
+					// if ($isApplied) {
+					// 	$rangeFacetSettings['removalUrl'] = $this->renderLinkWithoutFilter($value['applyCommand']);
+					// } else {
+					// 	$rangeFacetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . urlencode($value['applyCommand']) . '&page=1';
+					// 	// $rangeFacetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $rangeFacetId . ':' . urlencode($rangeFacetValue['display']) . '&page=1';
+					// }
+					$list[] = $rangeFacetSettings;
+				}
+				$availableRangeFacets[$rangeFacetId]['list'] = $list;
+			}
+		}
+		return $availableRangeFacets;
+	}
+
 	public function getLimitList() {
 
 		$availableLimits=[];
@@ -574,6 +617,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
 		}
 		return $this->filters;
+	}
+
+	public function getSummonRangeFilters() {
+		$rangeFilters = [];
+	
+
+		if (isset($this->rangeFacetFields)) {
+			foreach ($this->rangeFacetFields as $rangeFacetField) {
+				foreach ($rangeFacetField['counts'] as $value) {
+					if (isset($value['isApplied']) && $value['isApplied']) {
+						$rangeFilters[] = urlencode($value['applyCommand']);
+					}
+				}
+			}
+		}
+		return $rangeFilters;
 	}
 	
 	

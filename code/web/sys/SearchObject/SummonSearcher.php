@@ -99,7 +99,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	];
 
 	protected $rangeFacets = [
-		'PublicationDate,1981:1990,1991:2000',
+		'PublicationDate,1911:1920,1921:1930,1931:1940,1941:1950,1951:1960,1961:1970,1971:1980,1981:1990,1991:2000,2001:2010,2011:2020,2021:2030',
 	];
 
 	protected $limitList = [];

@@ -3,15 +3,15 @@
 require_once ROOT_DIR . '/sys/Community/Reward.php';
 class Milestone extends DataObject {
     public $__table = 'milestone';
-    public $id;
+    public $milestoneId;
     public $name;
     public $reward;
 
     public static function getObjectStructure($context = ''): array {
         $rewardsList = Reward::getRewardList();
         return [
-            'id' => [
-                'property' => 'id',
+            'milestoneId' => [
+                'property' => 'milestoneId',
                 'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id',
@@ -24,6 +24,42 @@ class Milestone extends DataObject {
 				'description' => 'A name for the milestone',
 				'required' => true,
 			],
+            'milestoneConditions' => [
+                'property' => 'milestoneConditions',
+                'type' => 'section',
+                'label' => 'Milestone Conditions',
+                'renderAsHeading' => true,
+                'properties' => [
+                    'condition' => [
+                        'property' => 'condition',
+                        'type' => 'enum',
+                        'label' => 'When: ',
+                        'values' => [
+                            'check_in' => 'Check In',
+                            'check_out' => 'Check Out',
+                            'rating' => 'Rating',
+                        ],
+                    ],
+                    'itemType' => [
+                        'property' => 'itemType',
+                        'type' => 'enum',
+                        'label' => 'Item Type',
+                        'values' => [
+                            'book' => 'Book',
+                            'any' => 'Any',
+                        ],
+                    ],
+                    'itemCategory' => [
+                        'property' => 'itemCategory',
+                        'type' => 'enum',
+                        'label' => 'Item Category',
+                        'values' => [
+                            'any' => 'Any',
+                            'fantasy' => 'Fantasy',
+                        ],
+                    ],
+                ],
+            ],
             'reward' => [
                 'property' => 'reward',
                 'type' => 'enum',

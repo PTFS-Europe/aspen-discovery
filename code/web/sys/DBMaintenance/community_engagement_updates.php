@@ -95,5 +95,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE campaign ADD COLUMN description VARCHAR(255) NOT NULL DEFAULT ' '",
             ],
         ],
+        'alter_milestone_id_name' => [
+            'title' => 'Alter Milestone Id Name',
+            'description' => 'Alter milestone Id name',
+            'sql' => [
+                "ALTER TABLE milestone CHANGE COLUMN id milestoneId INT",
+            ],
+        ],
     ];
 }

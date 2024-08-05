@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/sys/action-hooks.php';
 /**
  * Class DataObject
  *
@@ -310,6 +310,8 @@ abstract class DataObject implements JsonSerializable {
 		$serializedFields = $this->getSerializedFieldNames();
 		$compressedFields = $this->getCompressedColumnNames();
 
+		do_action('before_object_insert', get_object_vars($this));
+
 		$properties = get_object_vars($this);
 		$propertyNames = '';
 		$propertyValues = '';
@@ -407,6 +409,9 @@ abstract class DataObject implements JsonSerializable {
 				$history->insert();
 			}
 		}
+
+		#Call hook for post insert here
+		do_action('after_object_insert', $this);
 
 		return $response;
 	}

@@ -5,6 +5,11 @@ class RewardType extends DataObject {
     public $id;
     public $name;
 
+    private static $rewardTypes = [
+        1 => 'Physical',
+        2 => 'Digital',
+    ];
+
     public static function getObjectStructure($context = ''): array {
         return [
             'id' => [
@@ -22,17 +27,11 @@ class RewardType extends DataObject {
         ];
     }
 
-    static function getRewardTypeList(): array {
-        $rewardType = new RewardType();
-        $rewardType->orderBy('name');
-        $rewardType->find();
-        $rewardTypeList = [];
-        while ($rewardType->fetch()) {
-            $currentRewardType = new stdClass();
-            $currentRewardType->id = $rewardType->id;
-            $currentRewardType->naem = $rewardType->name;
-            $rewardTypeList[$currentRewardType->id] = $rewardType->name;
-        }
-        return $rewardTypeList;
-    }
+   public static function getRewardTypeList(): array {
+    return self::$rewardTypes;
+   }
+
+   public static function getRewardTypeById($id): ?string {
+    return self::$rewardTypes[$id] ?? null;
+   }
 }

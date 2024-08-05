@@ -88,5 +88,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE reward_type ADD COLUMN name VARCHAR(100) NOT NULL DEFAULT ''",
             ],
         ],
+        'add_description_to_campaign_table' => [
+            'title' => 'Add Description to Campaign Table',
+            'description' => 'Add description to campaign table',
+            'sql' => [
+                "ALTER TABLE campaign ADD COLUMN description VARCHAR(255) NOT NULL DEFAULT ' '",
+            ],
+        ],
     ];
 }

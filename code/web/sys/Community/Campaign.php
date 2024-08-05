@@ -5,6 +5,7 @@ class Campaign extends DataObject {
     public $__table = 'campaign';
     public $id;
     public $name;
+    public $description;
     public $milestoneOne;
     public $milestoneTwo;
     public $startDate;
@@ -27,6 +28,12 @@ class Campaign extends DataObject {
 				'description' => 'A name for the campaign',
 				'required' => true,
 			],
+            'description' => [
+                'property' => 'description',
+                'type' => 'text',
+                'label' => 'Description',
+                'description' => 'A description of the campaign',
+            ],
             'milestones' => [
                 'property' => 'milestones',
                 'type' => 'section',

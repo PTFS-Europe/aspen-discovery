@@ -6,8 +6,7 @@ class Campaign extends DataObject {
     public $id;
     public $name;
     public $description;
-    public $milestoneOne;
-    public $milestoneTwo;
+    public $milestones;
     public $startDate;
     public $endDate;
 
@@ -36,38 +35,37 @@ class Campaign extends DataObject {
             ],
             'milestones' => [
                 'property' => 'milestones',
-                'type' => 'section',
-                'label' => 'milestones',
+                'type' => 'oneToMany',
+                'label' => 'Milestones',
+                'description' => 'List of milestones for this campaign',
+                'sortable' => false,
+                'storeDb' => true,
+                'canAddNew' => true,
+                'canDelete' => true,
                 'hideInLists' => true,
-                'properties' => [
-                    'milestoneOne' => [
-                        'property' => 'milestoneOne',
+                'structure' => [
+                    'milestoneId' => [
+                        'property' => 'milestoneId',
                         'type' => 'enum',
-                        'label' => 'Milestone One',
-                        'description' > 'A milestone to meet for this campaign',
+                        'label' => 'Milestone',
+                        'description' => 'Select a milestone',
                         'values' => $milestoneList,
-                    ],
-                    'milestoneTwo' => [
-                        'property' => 'milestoneTwo',
-                        'type' => 'enum',
-                        'label' => 'Milestone Two',
-                        'description' > 'A milestone to meet for this campaign',
-                        'values' => $milestoneList,
+                        'required' => true,
                     ],
                 ],
             ],
-                'startDate' => [
-                    'property' => 'startDate',
-                    'type' => 'date',
-                    'label' => 'Campaign Start Date',
-                    'description' => 'The date the campaign starts',
-                ],
-                'endDate' => [
-                    'property' => 'endDate',
-                    'type' => 'date',
-                    'label' => 'Campaign End Date',
-                    'description' => 'The date the campaign ends',
-                ],
+            'startDate' => [
+                'property' => 'startDate',
+                'type' => 'date',
+                'label' => 'Campaign Start Date',
+                'description' => 'The date the campaign starts',
+            ],
+            'endDate' => [
+                'property' => 'endDate',
+                'type' => 'date',
+                'label' => 'Campaign End Date',
+                'description' => 'The date the campaign ends',
+            ],
          ];
     }
 }

@@ -3462,10 +3462,6 @@ class User extends DataObject {
 			'Administer All Basic Pages',
 			'Administer Library Basic Pages',
 		]);
-		$sections['community']->addAction(new AdminAction('Reward Types', 'Create and view reward types.', '/Community/RewardTypes'), [
-			'Administer All Basic Pages',
-			'Administer Library Basic Pages',
-		]);
 		$sections['cataloging'] = new AdminSection('Catalog / Grouped Works');
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), [

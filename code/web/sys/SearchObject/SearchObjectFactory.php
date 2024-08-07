@@ -29,7 +29,7 @@ class SearchObjectFactory {
 				require_once $path;
 				$class = 'SearchObject_' . $engine . 'Searcher';
 				if (class_exists($class)) {
-					/** @var SearchObject_SolrSearcher $searchObject */
+					/** @var SearchObject_BaseSearcher $searchObject */
 					return new $class();
 				}
 			}

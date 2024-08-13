@@ -590,6 +590,7 @@ class Library extends DataObject {
 			1 => 'Aspen Request System',
 			2 => 'ILS Request System',
 			3 => 'External Request Link',
+			4 => 'ILL Request System - Koha'
 		];
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog == null || !$catalog->hasMaterialsRequestSupport()) {

@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/ILL/Request.php';
+require_once ROOT_DIR . '/Drivers/Koha.php';
 
 /**
  * ILLRequest AJAX Page, handles sending ILL Requests from Aspen to Koha.
@@ -25,7 +25,7 @@ class ILL_AJAX extends Action
 	function postFormData()
 	{
 		$user = UserAccount::getActiveUserObj();
-	
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$reqBody = [
 			"ill_backend_id" => "FreeForm", // temporarily hard-coded
 			"patron_id" => $user->id,
@@ -45,7 +45,7 @@ class ILL_AJAX extends Action
 			]
 		];
 
-		$reqUrl = 'http://localhost:8081/api/v1/ill/requests'; // might need to replace localhost with IP if curl err 7 encountered -> TODO: store the url elsewhere 
+		$reqUrl = $catalog->getStaffClientBaseURL() . '/api/v1/ill/requests';
 		$credentials = $user->ils_username . ':' . $user->ils_password; // $user->ils_password is likely to be null -> TODO: need to find a way to safely get and pass this credential 
 
 		$curl = curl_init($reqUrl);
@@ -56,7 +56,7 @@ class ILL_AJAX extends Action
 		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($curl, CURLOPT_USERPWD, $credentials);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-		$result = curl_exec($curl);
+		curl_exec($curl);
 
 		$err = curl_error($curl);
 		if(!empty($err)) {

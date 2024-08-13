@@ -8589,6 +8589,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		if ($userCampaign->insert()) {
 			$campaign->enrollmentCounter++;
+			$campaign->currentEnrollments++;
 			$campaign->update();
 			return [
 				'success' => true,
@@ -8635,6 +8636,7 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($userCampaign->delete()) {
 					//Increase unenrollment counter
 					$campaign->unenrollmentCounter++;
+					$campaign->currentEnrollments--;
 					$campaign->update();
 
 					return [

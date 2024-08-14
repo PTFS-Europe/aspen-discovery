@@ -20,6 +20,12 @@ class ILL_MyRequests extends MyAccount {
 		curl_setopt($curl, CURLOPT_USERPWD, $credentials);
 		$response = curl_exec($curl);
 
+		// handle any curl errors
+		$err = curl_error($curl);
+		if (!empty($err)) {
+			return new AspenError('an error occurred while sending your request: ' . $err);
+		}
+
 	}
 
 	function getBreadcrumbs(): array {

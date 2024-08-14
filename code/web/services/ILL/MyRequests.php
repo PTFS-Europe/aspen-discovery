@@ -4,6 +4,27 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class ILL_MyRequests extends MyAccount {
 
 	function launch() {
+		global $interface;
+
+		if (UserAccount::isLoggedIn()) {
+
+			// get the patron - uses logic from MaterialsRequest_MyRequests::launch() (should we?)
+			$user = UserAccount::getActiveUserObj();
+			$linkedUsers = $user->getLinkedUsers();
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
+			$interface->assign('patronId', $patronId);
+
+			$patron = $user->getUserReferredTo($patronId);
+			if (count($linkedUsers) > 0) {
+				array_unshift($linkedUsers, $user);
+				$interface->assign('linkedUsers', $linkedUsers);
+			}
+			$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
+
+		} else {
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
+			exit;
+		}
 	}
 
 	private function getRequestsBy($user) {

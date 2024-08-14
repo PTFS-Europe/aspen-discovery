@@ -21,6 +21,14 @@ class ILL_MyRequests extends MyAccount {
 			}
 			$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
+			// get the list of requests for the patron
+			$requests = $this->getRequestsBy($patron);
+			$interface->assign('ILLRequests', $requests);
+
+			$requestTemplate = 'my-requests.tpl'; // could get this from a catalogConnection (if set first)
+			$title = 'My Materials Requests';
+
+			$this->display($requestTemplate, $title);
 		} else {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;

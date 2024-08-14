@@ -26,6 +26,14 @@ class ILL_MyRequests extends MyAccount {
 			return new AspenError('an error occurred while sending your request: ' . $err);
 		}
 
+		// extract the request body into an associative array
+		$headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+		$body = substr($response, $headerSize);
+		$requestList = json_decode($body, true);
+
+		// shut down the connection
+		curl_close($curl);
+		return $requestList;
 	}
 
 	function getBreadcrumbs(): array {

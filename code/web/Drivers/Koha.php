@@ -6976,6 +6976,10 @@ class Koha extends AbstractIlsDriver {
 		return $preference;
 	}
 
+	public function getStaffClientBaseURL() {
+		return $this->getKohaSystemPreference('staffClientBaseURL');
+	}
+
 	public function getPluginStatus(string $pluginName) {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */

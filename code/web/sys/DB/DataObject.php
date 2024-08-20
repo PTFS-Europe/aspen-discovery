@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/sys/Hooks/registry.php';
 /**
  * Class DataObject
  *
@@ -407,6 +407,8 @@ abstract class DataObject implements JsonSerializable {
 				$history->insert();
 			}
 		}
+
+		do_action('after_object_insert', $this);
 
 		return $response;
 	}

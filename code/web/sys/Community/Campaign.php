@@ -170,10 +170,11 @@ class Campaign extends DataObject {
      * @return array An associative array of active campaigns, where the keys
      *               are the campaign IDs and the values are the campaign names.
      */
-    public static function getActiveCampaignsList(): array {
+    public static function getActiveCampaignsList(): array
+    {
         $campaign = new Campaign();
-        $campaign->whereAdd("startDate < '".date("Y-m-d")."'");
-        $campaign->whereAdd("endDate > '".date("Y-m-d")."'");
+        $campaign->whereAdd("startDate < '" . date("Y-m-d") . "'");
+        $campaign->whereAdd("endDate > '" . date("Y-m-d") . "'");
         $campaignList = [];
         if ($campaign->find()) {
             while ($campaign->fetch()) {
@@ -182,7 +183,7 @@ class Campaign extends DataObject {
         }
         return $campaignList;
     }
-    
+
     public function saveMilestones() {
         if (isset($this->_availableMilestones) && is_array($this->_availableMilestones)) {
             $this->saveOneToManyOptions($this->_availableMilestones, 'campaignId');

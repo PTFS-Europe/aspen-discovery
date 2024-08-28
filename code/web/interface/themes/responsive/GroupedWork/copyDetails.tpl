@@ -4,6 +4,7 @@
 		<thead>
 		<tr>
 			<th>{translate text="Available Copies" isPublicFacing=true}</th>
+			<th>{translate text="Edition" isPublicFacing=true}</th>
 			<th>{translate text="Location" isPublicFacing=true}</th>
 			<th>{translate text="Call #" isPublicFacing=true}</th>
 		</tr>
@@ -21,6 +22,13 @@
 				{else}
 					<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies isPublicFacing=true}{if !empty($item.availableCopies)} <i class="fa fa-check"></i>{/if}</td>
 				{/if}
+				<td class="notranslate">
+					{if !empty($item.edition)}
+						{$item.edition}
+					{else}
+						{translate text='unknown' isPublicFacing=true}
+					{/if}
+				</td>
 				<td class="notranslate">{$item.shelfLocation}</td>
 				<td class="notranslate">
 					{if empty($item.isEContent)}

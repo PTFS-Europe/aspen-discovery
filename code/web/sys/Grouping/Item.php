@@ -25,6 +25,8 @@ class Grouping_Item {
 	public $locallyOwned;
 	/** @var bool */
 	public $holdable;
+	/** @var string */
+	public $edition;
 	/**
 	 * @var bool
 	 */
@@ -81,6 +83,7 @@ class Grouping_Item {
 			$this->isOrderItem = (bool)$itemDetails['isOrderItem'];
 			$this->isEContent = $itemDetails['isEcontent'];
 			$this->eContentSource = $itemDetails['eContentSource'];
+			$this->edition = $itemDetails['edition'];
 			if ($this->isEContent && !empty($itemDetails['localUrl'])) {
 				$this->_relatedUrls[] = [
 					'source' => $itemDetails['eContentSource'],
@@ -294,6 +297,7 @@ class Grouping_Item {
 			'subLocation' => $this->subLocation,
 			'itemId' => $this->itemId,
 			'variationId' => $this->variationId,
+			'edition' => $this->edition,
 			'actions' => $this->getActions(),
 		];
 		return $itemSummaryInfo;

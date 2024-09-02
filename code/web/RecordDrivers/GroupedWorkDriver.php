@@ -92,7 +92,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$summPublisher = null;
 		$summPubDate = null;
-		$summPlaceOfPublication =  null;
+		$summPlaceOfPublication = null;
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
@@ -532,8 +532,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get the authors of the work.
 	 *
-	 * @access  protected
-	 * @return  string
+	 * @access protected
+	 * @return string
 	 */
 	public function getAuthors() {
 		return isset($this->fields['author']) ? $this->fields['author'] : null;
@@ -647,12 +647,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Assign necessary Smarty variables and return a template name
 	 * to load in order to display the requested citation format.
-	 * For legal values, see getCitationFormats().  Returns null if
+	 * For legal values, see getCitationFormats(). Returns null if
 	 * format is not supported.
 	 *
 	 * @param string $format Citation format to display.
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @access public
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getCitation($format) {
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
@@ -697,10 +697,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	/**
 	 * Get an array of strings representing citation formats supported
-	 * by this record's data (empty if none).  Legal values: "APA", "MLA".
+	 * by this record's data (empty if none). Legal values: "APA", "MLA".
 	 *
-	 * @access  public
-	 * @return  array               Strings representing citation formats.
+	 * @access public
+	 * @return array Strings representing citation formats.
 	 */
 	public function getCitationFormats() {
 		return [
@@ -716,7 +716,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * Return the first valid ISBN found in the record (favoring ISBN-10 over
 	 * ISBN-13 when possible).
 	 *
-	 * @return  mixed
+	 * @return mixed
 	 */
 	public function getCleanISBN() {
 		require_once ROOT_DIR . '/sys/ISBN.php';
@@ -767,10 +767,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
-	 * @access  public
+	 * @access public
 	 * @param string $view The current view.
 	 *
-	 * @return  string              Name of Smarty template file to display.
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getCombinedResult($view = 'list') {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
@@ -1029,8 +1029,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get the edition of the current record.
 	 *
-	 * @access  protected
-	 * @return  array
+	 * @access protected
+	 * @return array
 	 */
 	public function getEditions() {
 		if (isset($this->fields['edition'])) {
@@ -1047,11 +1047,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get the text to represent this record in the body of an email.
 	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
+	 * @access public
+	 * @return string Text for inclusion in email.
 	 */
 	public function getEmail() {
-		return "  " . $this->getTitle() . "\n";
+		return " " . $this->getTitle() . "\n";
 	}
 
 	public function getExploreMoreInfo() {
@@ -1136,8 +1136,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * Get an array of all ISBNs associated with the record (may be empty).
 	 * The primary ISBN is the first entry
 	 *
-	 * @access  protected
-	 * @return  array
+	 * @access protected
+	 * @return array
 	 */
 	public function getISBNs() {
 		// If ISBN is in the index, it should automatically be an array... but if
@@ -1165,8 +1165,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get an array of all ISBNs associated with the record (may be empty).
 	 *
-	 * @access  protected
-	 * @return  array
+	 * @access protected
+	 * @return array
 	 */
 	public function getISSNs() {
 		// If ISBN is in the index, it should automatically be an array... but if
@@ -1214,11 +1214,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * load in order to display a summary of the item suitable for use in
 	 * user's favorites list.
 	 *
-	 * @access  public
+	 * @access public
 	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
+	 * null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
-	 * @return  string              Name of Smarty template file to display.
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getListEntry($listId = null, $allowEdit = true) {
 		global $interface;
@@ -1294,10 +1294,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * load in order to display a summary of the item suitable for use in
 	 * user's favorites list.
 	 *
-	 * @access  public
+	 * @access public
 	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @return  string              Name of Smarty template file to display.
+	 * null to show tags/notes from all user's lists).
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getCourseReserveEntry($listId = null) {
 		global $configArray;
@@ -1566,7 +1566,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	public function getPrimaryAuthor($useHighlighting = false) {
 		// Don't check for highlighted values if highlighting is disabled:
 		// MDN: 1/26 - author actually contains more information than author display.
-		//  It also includes dates lived so we will use that instead if possible
+		// It also includes dates lived so we will use that instead if possible
 		if ($this->highlight && $useHighlighting) {
 			if (isset($this->fields['_highlighting']['author'][0])) {
 				return $this->fields['_highlighting']['author'][0];
@@ -1625,8 +1625,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.
 	 *
-	 * @access  public
-	 * @return  array              Array of elements in the table of contents
+	 * @access public
+	 * @return array Array of elements in the table of contents
 	 */
 	public function getTableOfContentsNotes() {
 		$tableOfContentsNotes = [];
@@ -1650,8 +1650,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get the publishers of the record.
 	 *
-	 * @access  protected
-	 * @return  array
+	 * @access protected
+	 * @return array
 	 */
 	public function getPublishers() {
 		return $this->fields['publisherStr'] ?? [];
@@ -1772,7 +1772,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			global $searchSource;
 
 			/**
-			 * @var  $key
+			 * @var $key
 			 * @var Grouping_Manifestation $manifestation
 			 */
 			foreach ($this->_relatedManifestations as $key => $manifestation) {
@@ -1878,10 +1878,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
-	 * @access  public
+	 * @access public
 	 * @param string $view The current view.
 	 *
-	 * @return  string              Name of Smarty template file to display.
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getSearchResult($view = 'list') {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
@@ -2236,8 +2236,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * load in order to display the full record information on the Staff
 	 * View tab of the record view page.
 	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @access public
+	 * @return string Name of Smarty template file to display.
 	 */
 	public function getStaffView() {
 		global $interface;
@@ -2475,8 +2475,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.
 	 *
-	 * @access  public
-	 * @return  array              Array of elements in the table of contents
+	 * @access public
+	 * @return array Array of elements in the table of contents
 	 */
 	public function getTableOfContents() {
 		$tableOfContents = [];
@@ -2502,8 +2502,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * useful for retrieving additional information (like tags and user
 	 * comments) from the external MySQL database.
 	 *
-	 * @access  public
-	 * @return  string              Unique identifier.
+	 * @access public
+	 * @return string Unique identifier.
 	 */
 	public function getUniqueID() {
 		return $this->fields['id'];
@@ -2512,7 +2512,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/**
 	 * Get the UPC associated with the record (may be empty).
 	 *
-	 * @return  array
+	 * @return array
 	 */
 	public function getUPCs() {
 		// If UPCs is in the index, it should automatically be an array... but if
@@ -2879,7 +2879,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					$this->_relatedManifestations = [];
 
 					//Get the variations from the database and add to the appropriate manifestation
-					/** @var  $allVariations Grouping_Variation[] */
+					/** @var $allVariations Grouping_Variation[] */
 					$allVariations = [];
 					foreach ($variations as $variation) {
 						if (!array_key_exists($variation['format'], $this->_relatedManifestations)) {
@@ -3025,7 +3025,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @return array
 	 */
 	protected function loadScopingDetails($solrScope) {
-		//First load scoping information from the index.  This is stored as multiple values
+		//First load scoping information from the index. This is stored as multiple values
 		//within the scoping details field for the scope.
 		//Each field is
 		$scopingInfoFieldName = 'scoping_details_' . $solrScope;
@@ -3084,11 +3084,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		} else {
 			$uniqueVariationsIdsString = implode(',', $uniqueVariationIds);
 			$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_econtent_source.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
-									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
-									  LEFT JOIN indexed_econtent_source on eContentSourceId = indexed_econtent_source.id
-									  LEFT JOIN indexed_format on formatId = indexed_format.id
-									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
+									 LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
+									 LEFT JOIN indexed_econtent_source on eContentSourceId = indexed_econtent_source.id
+									 LEFT JOIN indexed_format on formatId = indexed_format.id
+									 LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+									 where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
 			$variationResults = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
 			$variations = $variationResults->fetchAll();
 			$variationResults->closeCursor();
@@ -3105,16 +3105,16 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
 			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
-								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
-								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
-								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
-								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
-								  LEFT JOIN indexed_place_of_publication ON placeOfPublicationId = indexed_place_of_publication.id
-								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
-								  LEFT JOIN indexed_format on formatId = indexed_format.id
-								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-								  LEFT JOIN indexed_language on languageId = indexed_language.id
-								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
+								 LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								 LEFT JOIN indexed_edition ON editionId = indexed_edition.id
+								 LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
+								 LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
+								 LEFT JOIN indexed_place_of_publication ON placeOfPublicationId = indexed_place_of_publication.id
+								 LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
+								 LEFT JOIN indexed_format on formatId = indexed_format.id
+								 LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+								 LEFT JOIN indexed_language on languageId = indexed_language.id
+								 where grouped_work_records.id IN ($uniqueRecordIdsString)";
 			$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
 			$records = $results->fetchAll();
 			$results->closeCursor();
@@ -3130,20 +3130,20 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		} else {
 			$uniqueItemIdsString = implode(',', $uniqueItemIds);
 			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
-								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_call_number.callNumber, indexed_shelf_location.shelfLocation, numCopies, isOrderItem, dateAdded, 
-       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, groupedWorkRecordEdition.edition as 'edition'
-								  FROM grouped_work_record_items
-								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
-								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
-								  LEFT JOIN indexed_call_number ON callNumberId = indexed_call_number.id
-								  LEFT JOIN indexed_shelf_location ON shelfLocationId = indexed_shelf_location.id
-								  LEFT JOIN indexed_location_code on locationCodeId = indexed_location_code.id
-								  LEFT JOIN indexed_sub_location_code on subLocationCodeId = indexed_sub_location_code.id
-								  LEFT JOIN (
-								  	SELECT indexed_edition.edition, grouped_work_records.id, grouped_work_records.editionId from grouped_work_records
-									LEFT JOIN indexed_edition on grouped_work_records.editionId = indexed_edition.id
-								  ) as groupedWorkRecordEdition on groupedWorkRecordId = groupedWorkRecordEdition.id 
-								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
+								grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_call_number.callNumber, indexed_shelf_location.shelfLocation, numCopies, isOrderItem, dateAdded, 
+ 								indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, groupedWorkRecordEdition.edition as 'edition'
+								FROM grouped_work_record_items
+								LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
+								LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
+								LEFT JOIN indexed_call_number ON callNumberId = indexed_call_number.id
+								LEFT JOIN indexed_shelf_location ON shelfLocationId = indexed_shelf_location.id
+								LEFT JOIN indexed_location_code on locationCodeId = indexed_location_code.id
+								LEFT JOIN indexed_sub_location_code on subLocationCodeId = indexed_sub_location_code.id
+								LEFT JOIN (
+									SELECT indexed_edition.edition, grouped_work_records.id, grouped_work_records.editionId from grouped_work_records
+								LEFT JOIN indexed_edition on grouped_work_records.editionId = indexed_edition.id
+								) as groupedWorkRecordEdition on groupedWorkRecordId = groupedWorkRecordEdition.id 
+								where grouped_work_record_items.id IN ($uniqueItemIdsString)";
 			$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
 			$scopedItems = $results->fetchAll();
 			$results->closeCursor();
@@ -3193,8 +3193,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		/** GroupedWorkSubDriver $recordDriver */
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
-		$timer->logTime("Loaded Record Driver for  $recordDetails[0]");
-		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
+		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
+		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
 
 		require_once ROOT_DIR . '/sys/Grouping/Record.php';
 		$relatedRecord = new Grouping_Record($recordDetails[0], $recordDetails, $recordDriver, $volumeData, $source, null);
@@ -3632,7 +3632,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						break;
 				}
 
-				$risFields[] = "TY  - ".$format;
+				$risFields[] = "TY - ".$format;
 			}
 			//RIS Tag: AU - Author
 			$authors = array();
@@ -3655,14 +3655,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			// RIS Tag: TI - Title
 			$title = $this->getTitle();
 			if (!empty($title)) {
-				$risFields[] = "TI  - " . $title;
+				$risFields[] = "TI - " . $title;
 			}
 
 			// RIS Tag: PB - Publisher
 			$publishers = $this->getPublishers();
 			if (is_array($publishers) && count($publishers) > 0) {
 				$publishers = implode(', ', $publishers);
-				$risFields[] = "PB  - " . $publishers;
+				$risFields[] = "PB - " . $publishers;
 			}
 
 			// RIS Tag: PY - Publication Year(s)
@@ -3672,7 +3672,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 			foreach ($publishDates as $publishDate) {
 				if (!empty($publishDate)) {
-					$risFields[] = "PY  - " . $publishDate;
+					$risFields[] = "PY - " . $publishDate;
 				}
 			}
 
@@ -3680,11 +3680,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if(is_array($placesOfPublication) && count($placesOfPublication) > 0) {
 				$placesOfPublicationClean = implode(', ', $placesOfPublication);
 				$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
-				$risFields[] = "CY  - ".$placesOfPublicationClean;
+				$risFields[] = "CY - ".$placesOfPublicationClean;
 			} else {
 				if(!empty($placesOfPublication)) {
 					$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
-					$risFields[] = "CY  - ".$placesOfPublicationClean;
+					$risFields[] = "CY - ".$placesOfPublicationClean;
 				}
 			}
 
@@ -3692,10 +3692,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$editions = $this->getEdition();
 			if(is_array($editions) && count($editions) > 0) {
 				$editions = implode(', ', $editions);
-				$risFields[] = "ET  - ".$editions;
+				$risFields[] = "ET - ".$editions;
 			} else {
 				if(!empty($editions)) {
-					$risFields[] = "ET  - ".$editions;
+					$risFields[] = "ET - ".$editions;
 				}
 			}
 
@@ -3703,47 +3703,47 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$url = $this->getRecordUrl();
 			if(is_array($url) && count($url) > 0) {
 				$url = implode(', ', $url);
-				$risFields[] = "UR  - ".$url;
+				$risFields[] = "UR - ".$url;
 			}
 
 			//RIS Tag: N1 - Info
 			$notes = $this->getTableOfContentsNotes();
 			if(is_array($notes) && count($notes) > 0) {
 				$notes = implode(', ', $notes);
-				$risFields[] = "N1  - ".$notes;
+				$risFields[] = "N1 - ".$notes;
 			}else{
 				if(!empty($notes)) {
-					$risFields[] = "N1  - ".$notes;
+					$risFields[] = "N1 - ".$notes;
 				}
 			}
 
 			//RIS Tag: N2 - Notes
 			$description = $this->getDescription();
 			if(!empty($description)) {
-				$risFields[] = "N2  - ".$description;
+				$risFields[] = "N2 - ".$description;
 			}
 
 			//RIS T2 - Series
 			$series = $this->getSeries();
 			if(is_array($series) && count($series) >0){
 				$series = implode(', ', $series);
-				$risFields[] = "T2  - ".$series;
+				$risFields[] = "T2 - ".$series;
 			}
 
 			//RIS ST - Short Title
 			$shortTilte = $this->getShortTitle();
 			if(!empty($shortTilte)) {
-				$risFields[] = "ST  - ".$shortTilte;
+				$risFields[] = "ST - ".$shortTilte;
 			}
 
 			// RIS Tag: SN - ISBN 
 			$ISBN = $this->getPrimaryIsbn();
 			if(!empty($ISBN)){
-				$risFields[] = "SN  - ".$ISBN;
+				$risFields[] = "SN - ".$ISBN;
 			}
 
 			//RIS Tag: AV
-			$risFields[] = "ER  -";
+			$risFields[] = "ER -";
 
 			return implode("\n", $risFields);
 		} else {

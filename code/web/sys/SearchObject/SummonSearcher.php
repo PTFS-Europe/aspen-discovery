@@ -101,8 +101,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $rangeFacets = [
 		'PublicationDate,1911:1920,1921:1930,1931:1940,1941:1950,1951:1960,1961:1970,1971:1980,1981:1990,1991:2000,2001:2010,2011:2020,2021:2030',
 	];
-	protected $rangeFilters = [
-	];
+	protected $rangeFilters = array();
 
 	protected $limitList = [];
 	protected $limitFields;
@@ -281,7 +280,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//allows access to records
 			's.role' =>  'authenticated',			
 		);
-		var_dump($options);
 		return $options;
 	}
 
@@ -302,7 +300,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->rangeFacetFields = $recordData['rangeFacetFields'];
 				$this->rangeFilters = $recordData['query']['rangeFilters'];
 			}
-			var_dump($recordData['query']['queryString']);
 			return $recordData;
 	}
 	
@@ -519,7 +516,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	public function getRangeFacetSet() {
 		$availableRangeFacets = [];
 		$this->rangeFilters = [];
-		
 		if (isset($this->rangeFacetFields)) {
 			foreach ($this->rangeFacetFields as $rangeFacetField) {
 				$facetId = $rangeFacetField['displayName'];
@@ -536,7 +532,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				foreach ($rangeFacetField['counts'] as $value) {
 					$rangeFacetValue = $value['range'];
 					$rangeValueString = $rangeFacetValue['minValue'] . '-' . $rangeFacetValue['maxValue'];
-					$isApplied = array_key_exists($facetId, $this->rangeFilterList) && in_array($rangeValueString, $this->rangeFilterList[$facetId]);
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($rangeValueString, $this->filterList[$facetId]);
 
 					$rangeFacetSettings = [
 						'value' => $rangeFacetValue['minValue'] . '-' . $rangeFacetValue['maxValue'],
@@ -615,9 +611,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			$this->filterList = array_merge($this->limitList, $this->filterList);
 		}
 		foreach ($this->filterList as $key => $value) {
-			// if ($key === 'PublicationDate') {
-			// 	continue;
-			// }
+			if ($key === 'PublicationDate') {
+				continue;
+			}
 			if (is_array($value)) {
 				foreach ($value as $val) {
 					$encodedValue = urlencode($val); 
@@ -632,9 +628,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	public function getSummonRangeFilters() {
-		$this->rangeFilters = [];
+		$this->rangeFilters = array();
 		if (isset($this->filterList)) {
 			foreach ($this->filterList as $key =>$value) {
+				if ($key !== 'PublicationDate') {
+					continue;
+				}
 				if (is_array($value)) {
 					foreach ($value as $val) {
 						$encodedValue = urlencode($val);

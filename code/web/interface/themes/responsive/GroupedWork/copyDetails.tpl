@@ -33,8 +33,6 @@
 				<td class="notranslate">
 					{if !empty($item.edition)}
 						{$item.edition}
-					{else}
-						{translate text='unknown' isPublicFacing=true}
 					{/if}
 				</td>
 				<td class="notranslate">{$item.shelfLocation}</td>

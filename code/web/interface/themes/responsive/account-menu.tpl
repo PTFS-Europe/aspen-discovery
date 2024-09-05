@@ -82,7 +82,6 @@
 					</a>
 				</div>
 			{/if}
-			<div class="header-menu-option"><a href="/MyAccount/MyCampaigns">{translate text="Your Campaigns" isPublicFacing=true}</a></div>
 			{if !empty($showUserPreferences)}<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
 			{if !empty($showUserContactInformation)}<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 			{if $user->showHoldNotificationPreferences()}

@@ -91,7 +91,7 @@ add_action('after_object_insert', 'after_work_review_insert', function ($value) 
  * This check is required because a new checkout being added to the database may not actually be a new checkout.
  *
  * @param object $value The Checkout object containing the sourceId, recordId, and userId.
- * @param int $milestone The milestone object.
+ * @param Milestone $milestone The milestone object.
  * @return bool Returns true if an entry exists, false otherwise.
  */
 function _checkoutMilestoneProgressEntryExists($value, $milestone)

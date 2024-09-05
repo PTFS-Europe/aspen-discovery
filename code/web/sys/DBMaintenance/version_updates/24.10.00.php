@@ -167,6 +167,14 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 		],
 
 		//chloe - PTFS-Europe
+		'add_separate_items_by_edition_in_where_is_it' => [
+			'title' => 'Add Separate Items By Edition in Where is it',
+			'description' => 'Add the separateItemsByEditionInWhereIsIt column to grouped_work_display_settings in order for the "Show Editions in the Where is it popup" setting to be added',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN separateItemsByEditionInWhereIsIt TINYINT(1) DEFAULT 0',
+			],
+		], // add_separate_items_by_edition_in_where_is_it
 
 		//pedro - PTFS-Europe
 

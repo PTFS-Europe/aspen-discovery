@@ -1535,7 +1535,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCopyDetails() : array {
+	function getCopyDetails(): array {
 		global $interface;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1556,34 +1556,38 @@ class GroupedWork_AJAX extends JSON_Action {
 		$interface->assign('itemSummaryId', $id);
 		$interface->assign('relatedManifestation', $relatedManifestation);
 
-		$summaryList = [];
-		if ($recordId != $id) {
-			$record = $recordDriver->getRelatedRecord($recordId);
-			$summary = null;
-			if ($record != null) {
-				foreach ($relatedManifestation->getVariations() as $variation) {
-					foreach ($variation->getRecords() as $recordWithVariation) {
-						if ($recordWithVariation->id == $recordId) {
-							$summary = $recordWithVariation->getItemSummary();
+		// show the editions and group the copies at given locations by edition
+		if (!empty($separateItemsByEditionInWhereIsIt) && $separateItemsByEditionInWhereIsIt == 1) {
+			$summaryList = [];
+			if ($recordId != $id) {
+				$record = $recordDriver->getRelatedRecord($recordId);
+				$summary = null;
+				if ($record != null) {
+					foreach ($relatedManifestation->getVariations() as $variation) {
+						foreach ($variation->getRecords() as $recordWithVariation) {
+							if ($recordWithVariation->id == $recordId) {
+								$item = [];
+								$item['summary'] = $recordWithVariation->getItemSummary();
+								$item['editionCoverUrl'] = $recordWithVariation->getBookcoverUrl('small');
+								$item['edition'] = $recordWithVariation->edition;
+								array_push($summaryList, $item);
+								break;
+							}
+						}
+						if (!empty($summary)) {
 							break;
 						}
 					}
-					if (!empty($summary)) {
-						break;
+				} else {
+					// if there is no recordId, then do not attempt to look for edition information, and only display summary information
+					foreach ($relatedManifestation->getVariations() as $variation) {
+						if ($recordId == $id . '_' . $variation->label) {
+							$summary = $variation->getItemSummary();
+							break;
+						}
 					}
 				}
-				$interface->assign('summary', $summary);
 			} else {
-				foreach ($relatedManifestation->getVariations() as $variation) {
-					if ($recordId == $id . '_' . $variation->label) {
-						$summary = $variation->getItemSummary();
-						break;
-					}
-				}
-				$interface->assign('summary', $summary);
-			}
-		} else {
-			if(!empty($separateItemsByEditionInWhereIsIt) && $separateItemsByEditionInWhereIsIt == 1) {
 				foreach ($recordDriver->getRelatedRecords() as $relatedRecord) {
 					$item = [];
 					$item['summary'] = $relatedRecord->getItemSummary();
@@ -1591,13 +1595,39 @@ class GroupedWork_AJAX extends JSON_Action {
 					$item['edition'] = $relatedRecord->edition;
 					array_push($summaryList, $item);
 				}
-				$interface->assign('summaryList', $summaryList);
+			}
+			$interface->assign('summaryList', $summaryList);
+		} else {
+			// only group copies by location, irrespective of edition (default)
+			if ($recordId != $id) {
+				$record = $recordDriver->getRelatedRecord($recordId);
+				$summary = null;
+				if ($record != null) {
+					foreach ($relatedManifestation->getVariations() as $variation) {
+						foreach ($variation->getRecords() as $recordWithVariation) {
+							if ($recordWithVariation->id == $recordId) {
+								$summary = $recordWithVariation->getItemSummary();
+								break;
+							}
+						}
+						if (!empty($summary)) {
+							break;
+						}
+					}
+				} else {
+					foreach ($relatedManifestation->getVariations() as $variation) {
+						if ($recordId == $id . '_' . $variation->label) {
+							$summary = $variation->getItemSummary();
+							break;
+						}
+					}
+				}
 			} else {
 				$summary = $relatedManifestation->getItemSummary();
-				$interface->assign('summary', $summary);
 			}
+			$interface->assign('summary', $summary);
 		}
-		
+
 		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
 		return [
 			'title' => translate([

@@ -14,19 +14,20 @@
 				</thead>
 				<tbody>
 					{foreach $summaryList item="item"}
-						<tr>
+						<tr class="sectionHeader">
 							{if !empty($showEditionCovers) && $showEditionCovers == 1}
-								<td class="col-tn-2 col-md-2 col-lg-2">
+								<th class="col-tn-2 col-md-2 col-lg-2">
 									<img src="{$item['editionCoverUrl']}" class="img-thumbnail {$coverStyle}">
-								</td>
+								</th>
 							{/if}
-							<td colspan="4">
+							<th>
 								{if !empty($item['edition'])}
 									{$item['edition']}
 								{else}
-									{translate text="Unknown edition" isPublicFacing=true}
+									{translate text="-" isPublicFacing=true}
 								{/if}
-							</td>
+							</th>
+							<th colspan="2"><th>
 						</tr>
 						{foreach from=$item['summary'] item="item"}
 							<tr {if !empty($item.availableCopies)}class="available" {/if}>

@@ -17,7 +17,7 @@
 						<tr>
 							{if !empty($showEditionCovers) && $showEditionCovers == 1}
 								<td class="col-tn-2 col-md-2 col-lg-2">
-									<img src="{$recordDriver->getBookcoverUrl('small')}" class="img-thumbnail {$coverStyle}">
+									<img src="{$item['editionCoverUrl']}" class="img-thumbnail {$coverStyle}">
 								</td>
 							{/if}
 							<td colspan="4">

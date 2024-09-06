@@ -1542,6 +1542,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('recordDriver', $recordDriver);
+		$separateItemsByEditionInWhereIsIt = $interface->getVariable('separateItemsByEditionInWhereIsIt');
 
 		$recordId = $_REQUEST['recordId'];
 		$selectedFormat = urldecode($_REQUEST['format']);
@@ -1555,6 +1556,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		$interface->assign('itemSummaryId', $id);
 		$interface->assign('relatedManifestation', $relatedManifestation);
 
+		$summaryList = [];
 		if ($recordId != $id) {
 			$record = $recordDriver->getRelatedRecord($recordId);
 			$summary = null;
@@ -1570,6 +1572,7 @@ class GroupedWork_AJAX extends JSON_Action {
 						break;
 					}
 				}
+				$interface->assign('summary', $summary);
 			} else {
 				foreach ($relatedManifestation->getVariations() as $variation) {
 					if ($recordId == $id . '_' . $variation->label) {
@@ -1577,12 +1580,24 @@ class GroupedWork_AJAX extends JSON_Action {
 						break;
 					}
 				}
+				$interface->assign('summary', $summary);
 			}
 		} else {
-			$summary = $relatedManifestation->getItemSummary();
+			if(!empty($separateItemsByEditionInWhereIsIt) && $separateItemsByEditionInWhereIsIt == 1) {
+				foreach ($recordDriver->getRelatedRecords() as $relatedRecord) {
+					$item = [];
+					$item['summary'] = $relatedRecord->getItemSummary();
+					$item['editionCoverUrl'] = $relatedRecord->getBookcoverUrl('small');
+					$item['edition'] = $relatedRecord->edition;
+					array_push($summaryList, $item);
+				}
+				$interface->assign('summaryList', $summaryList);
+			} else {
+				$summary = $relatedManifestation->getItemSummary();
+				$interface->assign('summary', $summary);
+			}
 		}
-		$interface->assign('summary', $summary);
-
+		
 		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
 		return [
 			'title' => translate([

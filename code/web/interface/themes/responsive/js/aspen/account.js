@@ -497,6 +497,9 @@ AspenDiscovery.Account = (function () {
 			var username = $("#username").val(),
 				password = $("#password").val(),
 				loginErrorElem = $('#loginError');
+			if(!username) {
+				username = $('#ajaxLoginUsername').val();
+			}
 			if (!username || !password) {
 				loginErrorElem
 					.text($("#missingLoginPrompt").text())
@@ -524,6 +527,9 @@ AspenDiscovery.Account = (function () {
 		processAjaxLogin: function (ajaxCallback) {
 			if (this.preProcessLogin()) {
 				var username = $("#username").val();
+				if(!username) {
+					username = $('#ajaxLoginUsername').val();
+				}
 				var password = $("#password").val();
 				var rememberMe = $("#rememberMe").prop('checked');
 				var loginErrorElem = $('#loginError');

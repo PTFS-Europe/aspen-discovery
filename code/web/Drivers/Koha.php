@@ -46,6 +46,7 @@ class Koha extends AbstractIlsDriver {
 			$curRow = $results->fetch_assoc();
 			$address = $curRow['address'];
 			$city = $curRow['city'];
+			$results->close();
 		}
 
 		$postVariables = [
@@ -142,6 +143,7 @@ class Koha extends AbstractIlsDriver {
 						$city = $curRow['city'];
 						$lastname = $curRow['surname'];
 					}
+					$results->close();
 				}
 
 				$postVariables = [
@@ -437,7 +439,6 @@ class Koha extends AbstractIlsDriver {
 			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
 				$renewPref = $renewPrefRow['autorenew_checkouts'];
 			}
-
 			$renewPrefResults->close();
 		}
 		$timer->logTime("Loaded borrower preference for autorenew_checkouts");
@@ -455,7 +456,6 @@ class Koha extends AbstractIlsDriver {
 					$patronIsExpired = true;
 				}
 			}
-
 			$patronExpirationResults->close();
 		}
 		$timer->logTime("Loaded patron expiration date");
@@ -539,12 +539,17 @@ class Koha extends AbstractIlsDriver {
 				$circulationRulesForCheckout = [];
 				/** @noinspection SqlResolve */
 				/** @noinspection SqlDialectInspection */
-				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
+				$circulationRulesSql = "
+					SELECT * FROM circulation_rules
+					WHERE (categorycode IN ('$patronType', '*') OR categorycode IS NULL)
+					  AND (itemtype IN('$itemType', '*') OR itemtype is null)
+					  AND (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL)
+					ORDER BY branchcode desc, categorycode desc, itemtype desc LIMIT 1
+				";
 				$circulationRulesRS = mysqli_query($this->dbConnection, $circulationRulesSql);
 				if ($circulationRulesRS !== false) {
-					while ($circulationRulesRow = $circulationRulesRS->fetch_assoc()) {
-						$circulationRulesForCheckout[] = $circulationRulesRow;
-					}
+					$circulationRulesRow = $circulationRulesRS->fetch_assoc();
+					$circulationRulesForCheckout[] = $circulationRulesRow;
 					$circulationRulesRS->close();
 				}
 				$timer->logTime("Load circulation rules for checkout");
@@ -709,6 +714,7 @@ class Koha extends AbstractIlsDriver {
 
 			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
 		}
+		$results->close();
 
 		//Check to see if any checkouts are Claims Returned
 		$allIssueIdsAsString = implode(',', $allIssueIds);
@@ -897,9 +903,11 @@ class Koha extends AbstractIlsDriver {
 					$patronId = $lookupUserRow['borrowernumber'];
 					$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
 					if (!empty($newUser) && !($newUser instanceof AspenError)) {
+						$lookupUserResult->close();
 						return $newUser;
 					}
 				}
+				$lookupUserResult->close();
 			} else if ($this->getKohaVersion() >= 22.1110) {
 				//Authenticate the user using KOHA API
 				$oauthToken = $this->getOAuthToken();
@@ -944,9 +952,11 @@ class Koha extends AbstractIlsDriver {
 
 							$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
 							if ($expiredPasswordResult != null) {
+								$lookupUserResult->close();
 								return $expiredPasswordResult;
 							}
 						}
+						$lookupUserResult->close();
 					}
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
@@ -1015,6 +1025,7 @@ class Koha extends AbstractIlsDriver {
 					if ($lookupUserResult->num_rows > 0) {
 						$userExistsInDB = true;
 						$lookupUserRow = $lookupUserResult->fetch_assoc();
+						$lookupUserResult->close();
 						if (UserAccount::isUserMasquerading()) {
 							$patronId = $lookupUserRow['borrowernumber'];
 							$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
@@ -1035,6 +1046,8 @@ class Koha extends AbstractIlsDriver {
 								return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
 							}
 						}
+					} else {
+						$lookupUserResult->close();
 					}
 				}
 			} else {
@@ -1087,6 +1100,7 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 			}
+			$passwordExpirationResult->close();
 		} catch (Exception $e) {
 			//This happens if password expiration is not enabled
 		}
@@ -1209,6 +1223,7 @@ class Koha extends AbstractIlsDriver {
 								global $logger;
 								$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
 							}
+							$patronCategoryResult->close();
 						} else {
 							global $logger;
 							$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
@@ -1324,6 +1339,7 @@ class Koha extends AbstractIlsDriver {
 
 			return $user;
 		}
+
 		return $userExistsInDB;
 	}
 
@@ -1434,6 +1450,7 @@ class Koha extends AbstractIlsDriver {
 					$address = $curRow['address'];
 					$city = $curRow['city'];
 				}
+				$results->close();
 			} else {
 				//We could not connect to the database, don't update, so we don't corrupt the DB
 				global $logger;
@@ -1602,6 +1619,8 @@ class Koha extends AbstractIlsDriver {
 					}
 					$readingHistoryTitles[] = $curTitle;
 				}
+
+				$readingHistoryTitleRS->close();
 			}
 		}
 
@@ -2009,12 +2028,20 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			if ($this->getKohaVersion() >= 22.11) {
-				$postParams = [
-					'patron_id' => $patron->unique_ils_id,
-					'pickup_library_id' => $pickupBranch,
-					'item_group_id' => (int)$volumeId,
-					'biblio_id' => $recordId,
-				];
+				if ($volumeId != 0){
+					$postParams = [
+						'patron_id' => $patron->unique_ils_id,
+						'pickup_library_id' => $pickupBranch,
+						'item_group_id' => (int)$volumeId,
+						'biblio_id' => $recordId,
+					];
+				} else { //if there is no item group id
+					$postParams = [
+						'patron_id' => $patron->unique_ils_id,
+						'pickup_library_id' => $pickupBranch,
+						'biblio_id' => $recordId,
+					];
+				}
 			} else {
 				$postParams = [
 					'patron_id' => $patron->unique_ils_id,
@@ -2528,7 +2555,7 @@ class Koha extends AbstractIlsDriver {
 				$holds['available'][$curHold->source . $curHold->cancelId . $curHold->userId] = $curHold;
 			}
 		}
-
+		$results->close();
 
 		//Load additional ILL Requests that are not shipped
 		$oauthToken = $this->getOAuthToken();
@@ -2969,7 +2996,6 @@ class Koha extends AbstractIlsDriver {
 				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = $itemId limit 1";
 			}
 
-			$renewResults = mysqli_query($this->dbConnection, $renewSql);
 			$maxRenewals = 0;
 
 			$params = [
@@ -2985,15 +3011,16 @@ class Koha extends AbstractIlsDriver {
 
 			//Parse the result
 			if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+				$renewResults = mysqli_query($this->dbConnection, $renewSql);
 
 				while ($curRow = mysqli_fetch_assoc($renewResults)) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
 					$checkoutBranch = $curRow['branchcode'];
 					if ($this->getKohaVersion() >= 22.11) {
-						$renewCount = $curRow['renewals_count'] + 1;
+						$renewCount = $curRow['renewals_count'];
 					} else {
-						$renewCount = $curRow['renewals'] + 1;
+						$renewCount = $curRow['renewals'];
 					}
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
@@ -3005,6 +3032,7 @@ class Koha extends AbstractIlsDriver {
 						$issuingRulesRS->close();
 					}
 				}
+
 				$renewResults->close();
 
 				$renewsRemaining = ($maxRenewals - $renewCount);
@@ -3726,6 +3754,7 @@ class Koha extends AbstractIlsDriver {
 		while ($curRow = $results->fetch_assoc()) {
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
+		$results->close();
 
 		if ($type == 'selfReg') {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
@@ -4845,6 +4874,7 @@ class Koha extends AbstractIlsDriver {
 		while ($curRow = $results->fetch_assoc()) {
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
+		$results->close();
 
 		if (isset($kohaPreferences['OPACSuggestionMandatoryFields'])) {
 			$mandatoryFields = array_flip(explode('|', $kohaPreferences['OPACSuggestionMandatoryFields']));
@@ -5177,6 +5207,7 @@ class Koha extends AbstractIlsDriver {
 		if ($curRow = $results->fetch_assoc()) {
 			$numRequests = $curRow['numRequests'];
 		}
+		$results->close();
 		return $numRequests;
 	}
 
@@ -5301,6 +5332,7 @@ class Koha extends AbstractIlsDriver {
 				}
 				$allRequests[] = $request;
 			}
+			$results->close();
 
 			return $allRequests;
 		}
@@ -5406,6 +5438,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 		}
+		$results->close();
 
 		//Set default values for extended patron attributes
 		if ($this->getKohaVersion() > 21.05) {
@@ -5719,6 +5752,7 @@ class Koha extends AbstractIlsDriver {
 			}
 			$results['totalLists']++;
 		}
+		$listResults->close();
 
 		return $results;
 	}
@@ -5917,6 +5951,7 @@ class Koha extends AbstractIlsDriver {
 					return $newUser;
 				}
 			}
+			$lookupUserResult->close();
 		}else{
 			//search by username
 			/** @noinspection SqlResolve */
@@ -5931,6 +5966,7 @@ class Koha extends AbstractIlsDriver {
 					return $newUser;
 				}
 			}
+			$lookupUserResult->close();
 		}
 
 		return false;
@@ -5955,6 +5991,7 @@ class Koha extends AbstractIlsDriver {
 		} else if ($lookupUserResult->num_rows > 1) {
 			return 'Found more than one user.';
 		}
+		$lookupUserResult->close();
 
 		return false;
 	}
@@ -5969,18 +6006,21 @@ class Koha extends AbstractIlsDriver {
 		$sql = "SELECT borrowernumber, cardnumber, " . mysqli_escape_string($this->dbConnection, $field) . " from borrowers where " . mysqli_escape_string($this->dbConnection, $field) . " = '" . mysqli_escape_string($this->dbConnection, $value) . "'";
 
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		$return_value = false;
 		if ($lookupUserResult->num_rows == 1) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null, $lookupUserRow['cardnumber']);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
-				return $newUser;
+				$return_value = $newUser;
 			}
 		} else if ($lookupUserResult->num_rows > 1) {
-			return 'Found more than one user.';
+			$return_value = 'Found more than one user.';
 		}
 
-		return false;
+		$lookupUserResult->close();
+
+		return $return_value;
 	}
 
 	/**
@@ -5997,6 +6037,7 @@ class Koha extends AbstractIlsDriver {
 				$allowed = false;
 			}
 		}
+		$preferenceRS->close();
 		return $allowed;
 	}
 
@@ -6030,6 +6071,7 @@ class Koha extends AbstractIlsDriver {
 				$enablePhoneMessaging |= !empty($systemPreference['value']);
 			}
 		}
+		$systemPreferencesRS->close();
 		$interface->assign('enablePhoneMessaging', $enablePhoneMessaging);
 
 		/** @noinspection SqlResolve */
@@ -6039,6 +6081,7 @@ class Koha extends AbstractIlsDriver {
 			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
 			$interface->assign('smsProviderId', $borrowerRow['sms_provider_id']);
 		}
+		$borrowerRS->close();
 
 		//Lookup which transports are allowed
 		/** @noinspection SqlResolve */
@@ -6057,6 +6100,7 @@ class Koha extends AbstractIlsDriver {
 			}
 			$messagingSettings[$transportId]['allowableTransports'][$transportSetting['message_transport_type']] = $transportSetting['message_transport_type'];
 		}
+		$transportSettingRS->close();
 
 		//Get the list of notices to display information for
 		/** @noinspection SqlResolve */
@@ -6100,6 +6144,7 @@ class Koha extends AbstractIlsDriver {
 			}
 			$messageAttributes[] = $messageType;
 		}
+		$messageAttributesRS->close();
 		$interface->assign('messageAttributes', $messageAttributes);
 
 		//Get messaging settings for the user
@@ -6125,6 +6170,7 @@ class Koha extends AbstractIlsDriver {
 				$messagingSettings[$messageType]['selectedTransports'][$userMessagingSetting['message_transport_type']] = $userMessagingSetting['message_transport_type'];
 			}
 		}
+		$userMessagingSettingsRS->close();
 		$interface->assign('messagingSettings', $messagingSettings);
 
 		$validNoticeDays = [];
@@ -6154,6 +6200,7 @@ class Koha extends AbstractIlsDriver {
 				} else {
 					$noticeLanguages[$language] = $language;
 				}
+				$languageRS->close();
 			}
 			/** @noinspection SqlResolve */
 			$borrowerLanguageSql = "SELECT lang FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
@@ -6161,8 +6208,9 @@ class Koha extends AbstractIlsDriver {
 			if ($borrowerLanguageRow = $borrowerLanguageRS->fetch_assoc()) {
 				$preferredNoticeLanguage = $borrowerLanguageRow['lang'];
 			}
-
+			$borrowerLanguageRS->close();
 		}
+
 		$interface->assign('canTranslateNotices', $canTranslateNotices);
 		$interface->assign('noticeLanguages', $noticeLanguages);
 		$interface->assign('preferredNoticeLanguage', $preferredNoticeLanguage);
@@ -6568,6 +6616,7 @@ class Koha extends AbstractIlsDriver {
 		while ($curRow = $results->fetch_assoc()) {
 			$showAutoRenew = $curRow['value'];
 		}
+		$results->close();
 		return $showAutoRenew;
 	}
 
@@ -6583,6 +6632,7 @@ class Koha extends AbstractIlsDriver {
 				$autoRenewEnabled = $curRow['autorenew_checkouts'];
 				break;
 			}
+			$results->close();
 		}
 		return $autoRenewEnabled;
 	}
@@ -6605,6 +6655,7 @@ class Koha extends AbstractIlsDriver {
 				$address = $curRow['address'];
 				$city = $curRow['city'];
 			}
+			$results->close();
 		}
 
 		$postVariables = [
@@ -6687,6 +6738,7 @@ class Koha extends AbstractIlsDriver {
 					$uniqueKeyValid = true;
 				}
 			}
+			$lookupResult->close();
 			if (!$uniqueKeyValid) {
 				$error = translate([
 					'text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.',
@@ -6728,6 +6780,8 @@ class Koha extends AbstractIlsDriver {
 					$uniqueKeyValid = true;
 				}
 			}
+			$lookupResult->close();
+
 			if (!$uniqueKeyValid) {
 				$error = translate([
 					'text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.',
@@ -6840,6 +6894,8 @@ class Koha extends AbstractIlsDriver {
 
 			$extendedAttributes[] = $attribute;
 		}
+
+		$borrowerAttributeTypesRS->close();
 
 		return $extendedAttributes;
 	}
@@ -7028,6 +7084,7 @@ class Koha extends AbstractIlsDriver {
 			if ($curRow = $results->fetch_assoc()) {
 				return $curRow['userId'];
 			}
+			$results->close();
 		}
 		return null;
 	}
@@ -7049,6 +7106,7 @@ class Koha extends AbstractIlsDriver {
 					'message' => 'Sorry, that username is not available.',
 				];
 			}
+			$results->close();
 		}
 		//Load required fields from Koha here to make sure we don't wipe them out
 		/** @noinspection SqlResolve */
@@ -7061,6 +7119,7 @@ class Koha extends AbstractIlsDriver {
 				$address = $curRow['address'];
 				$city = $curRow['city'];
 			}
+			$results->close();
 		}
 
 		$postVariables = [
@@ -7143,6 +7202,7 @@ class Koha extends AbstractIlsDriver {
 						'messageStyle' => 'info',
 					];
 				}
+				$results->close();
 			}
 		}
 
@@ -7186,6 +7246,7 @@ class Koha extends AbstractIlsDriver {
 					];
 				}
 			}
+			$results->close();
 		}
 
 		return $messages;
@@ -7424,6 +7485,7 @@ class Koha extends AbstractIlsDriver {
 						}
 					}
 				}
+
 				$results->close();
 			}
 		} else {
@@ -7680,6 +7742,7 @@ class Koha extends AbstractIlsDriver {
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 		if ($lookupUserResult->num_rows > 0) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			$lookupUserResult->close();
 			if ($lookupUserRow['borrowernumber'] != $user->unique_ils_id) {
 				global $logger;
 				$logger->log("Updating unique id for user from $user->unique_ils_id to {$lookupUserRow['borrowernumber']}", Logger::LOG_WARNING);
@@ -7912,7 +7975,9 @@ class Koha extends AbstractIlsDriver {
 						'name' => trim(trim($curRow['firstname'] . ' ' . $curRow['middle_name']) . ' ' . $curRow['surname']),
 					];
 				}
+				$results->close();
 			}
+
 			if (count($cardNumbers) == 0) {
 				return [
 					'success' => false,
@@ -7947,6 +8012,7 @@ class Koha extends AbstractIlsDriver {
 						'patronId' => $curRow['borrowernumber']
 					];
 				}
+				$results->close();
 			}
 			if (count($cardNumbers) == 0) {
 				return [
@@ -7977,6 +8043,7 @@ class Koha extends AbstractIlsDriver {
 		while ($curRow = $results->fetch_assoc()) {
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
+		$results->close();
 		$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
 
@@ -8185,6 +8252,8 @@ class Koha extends AbstractIlsDriver {
 						$expirationDate =  strtotime($curRow['dateexpiry']);
 					}
 				}
+
+				$results->close();
 			}
 
 			//Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history
@@ -8199,7 +8268,15 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
+	public function hasAPICheckout() : bool {
+		if($this->getKohaVersion() >= 23.11) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
 		if($this->getKohaVersion() >= 23.11) {
 			$item = [];
 			$result = [
@@ -8238,7 +8315,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 				$scoSettings = new AspenLiDASelfCheckSetting();
-				$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocationId);
+				$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
 
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
@@ -8254,7 +8331,7 @@ class Koha extends AbstractIlsDriver {
 					];
 					$postParams = json_encode($checkoutParams);
 
-					$checkoutLocation = $currentLocationId; // assign checkout to current location logged into (default)
+					$checkoutLocation = $currentLocation->code; // assign checkout to current location logged into (default)
 					if($checkoutLocationSetting == 1) {
 						// assign checkout to user home location
 						$checkoutLocation = $patron->getHomeLocationCode();
@@ -8265,7 +8342,7 @@ class Koha extends AbstractIlsDriver {
 
 					$this->apiCurlWrapper->addCustomHeaders([
 						'Authorization: Bearer ' . $oAuthToken,
-						'x-koha-library: ' . $checkoutLocation,
+						'x-koha-library: ' . $checkoutLocation->code,
 						'User-Agent: Aspen Discovery',
 						'Accept: */*',
 						'Cache-Control: no-cache',
@@ -8375,6 +8452,8 @@ class Koha extends AbstractIlsDriver {
 						'isPublicFacing' => true,
 					]);
 				}
+
+				$lookupItemResult->close();
 			}
 
 			return $result;
@@ -8406,6 +8485,7 @@ class Koha extends AbstractIlsDriver {
 				$transports[$curRow['module']][$i]['name'] = $curRow['name'];
 				$i++;
 			}
+			$results->close();
 		}
 
 		return $transports;
@@ -8465,6 +8545,8 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 
+			$results->close();
+
 			return [
 				'success' => true,
 				'message' => 'Added ' . $numAdded . ' to message queue'
@@ -8523,6 +8605,8 @@ class Koha extends AbstractIlsDriver {
 				}
 
 			}
+
+			$results->close();
 
 			return [
 				'success' => true,

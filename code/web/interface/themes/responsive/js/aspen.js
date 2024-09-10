@@ -7107,6 +7107,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'NCR') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'SnapPay') {
+							orderInfo = response;
 						}
 					}
 				}
@@ -7146,6 +7148,21 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+			}
+		},
+
+		createSnapPayOrder: function (finesFormId, transactionType) {
+			var response = this.createGenericOrder(finesFormId, 'SnapPay', transactionType, null);
+			if (response === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				var url = response.paymentRequestUrl;
+				var formData = response.postParams;
+				var form = '';
+				$.each( formData, function( key, value ) {
+					form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+				});
+				$('<form action="' + url + '" method="POST">' + form + '</form>').appendTo($(document.body)).submit();
 			}
 		},
 
@@ -9604,6 +9621,51 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowshowSearchToolsAtTop").hide();
 			}
 		},
+		initializeFormatSort: function () {
+			this.updateGroupedWorkSortFields('book');
+			this.updateGroupedWorkSortFields('comic');
+			this.updateGroupedWorkSortFields('movie');
+			this.updateGroupedWorkSortFields('music');
+			this.updateGroupedWorkSortFields('other');
+		},
+		updateGroupedWorkSortFields: function(groupingCategory) {
+			if (groupingCategory == 'book') {
+				var selectedOption = $("#bookSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedBookFormats").hide();
+				}else{
+					$("#propertyRowsortedBookFormats").show();
+				}
+			}else if (groupingCategory == 'comic') {
+				var selectedOption = $("#comicSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedComicFormats").hide();
+				}else{
+					$("#propertyRowsortedComicFormats").show();
+				}
+			}else if (groupingCategory == 'movie') {
+				var selectedOption = $("#movieSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedMovieFormats").hide();
+				}else{
+					$("#propertyRowsortedMovieFormats").show();
+				}
+			}else if (groupingCategory == 'music') {
+				var selectedOption = $("#musicSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedMusicFormats").hide();
+				}else{
+					$("#propertyRowsortedMusicFormats").show();
+				}
+			}else if (groupingCategory == 'other') {
+				var selectedOption = $("#otherSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedOtherFormats").hide();
+				}else{
+					$("#propertyRowsortedOtherFormats").show();
+				}
+			}
+		},
 		updateIndexingProfileFields: function () {
 			var audienceType = $('#determineAudienceBySelect').val();
 			if (audienceType === '3') {
@@ -10160,6 +10222,7 @@ AspenDiscovery.Admin = (function () {
 		showSearch: function () {
 			$('#adminSearchBox').css('display', 'block');
 			$('#showSearchButton').css('display', 'none');
+			document.getElementById('searchAdminBar').focus();
 		},
 
 		showFindCommunityContentForm: function (toolModule, toolName, objectType) {
@@ -11544,7 +11607,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=checkOutTitle&patronId=" + patronId;
@@ -11573,7 +11636,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doHold(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=placeHold&patronId=" + patronId;
@@ -15649,18 +15712,39 @@ AspenDiscovery.WebBuilder = function () {
 			if(requireLogin.is(":checked")) {
 				$("#propertyRowallowAccess").show();
 				$("#propertyRowrequireLoginUnlessInLibrary").show();
+				$("#propertyRowallowableHomeLocations").show();
 			} else {
 				$("#propertyRowallowAccess").hide();
 				$("#propertyRowrequireLoginUnlessInLibrary").hide();
+				$("#propertyRowallowableHomeLocations").hide();
 			}
 
 			$(requireLogin).click(function() {
 				if(requireLogin.is(":checked")){
 					$("#propertyRowallowAccess").show();
 					$("#propertyRowrequireLoginUnlessInLibrary").show();
+					$("#propertyRowallowableHomeLocations").show();
 				}else{
 					$("#propertyRowallowAccess").hide();
 					$("#propertyRowrequireLoginUnlessInLibrary").hide();
+					$("#propertyRowallowableHomeLocations").hide();
+				}
+			});
+		},
+
+		updateWebResourcesFields: function () {
+			var requireLogin = $('#requireLoginUnlessInLibrary');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccessByLibrary").show();
+			} else {
+				$("#propertyRowallowAccessByLibrary").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccessByLibrary").show();
+				}else{
+					$("#propertyRowallowAccessByLibrary").hide();
 				}
 			});
 		},
@@ -15674,7 +15758,7 @@ AspenDiscovery.WebBuilder = function () {
 
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
-					if(Globals.loggedIn || data.inLibrary) {
+					if(Globals.loggedIn || data.canView) {
 						var params = {
 							method: "trackWebResourceUsage",
 							id: id,
@@ -15694,6 +15778,8 @@ AspenDiscovery.WebBuilder = function () {
 								location.assign(data.url);
 							}
 						});
+					} else if (Globals.loggedIn && !data.canView) {
+						return AspenDiscovery.showMessage(data.userNoAccessTitle, data.userNoAccessMessage);
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
 							return AspenDiscovery.WebBuilder.getWebResource(id);

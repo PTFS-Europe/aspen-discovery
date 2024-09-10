@@ -39,10 +39,10 @@ if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
 	require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
 }
 if (file_exists(ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php')) {
-    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
+	require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
 }
 if (file_exists(ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php')) {
-    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
+	require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
 }
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
@@ -73,7 +73,6 @@ class Library extends DataObject {
 	public $displayExploreMoreBarInEbscoEds;
 	public $displayExploreMoreBarInCatalogSearch;
 	public $displayExploreMoreBarInEbscoHost;
-			
 
 
 	public $generateSitemap;
@@ -142,6 +141,7 @@ class Library extends DataObject {
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
+	public $snapPaySettingId;
 	public $squareSettingId;
 	public $stripeSettingId;
 	public $worldPaySettingId;
@@ -421,13 +421,13 @@ class Library extends DataObject {
 
 	//OAI
 	public $enableOpenArchives;
-    public $openArchivesFacetSettingId;
+	public $openArchivesFacetSettingId;
 
 	//Web Builder
 	public $enableWebBuilder;
 
-    //WebsiteIndexing
-    public $websiteIndexingFacetSettingId;
+	//WebsiteIndexing
+	public $websiteIndexingFacetSettingId;
 
 	//Donations
 	public $donationSettingId;
@@ -464,6 +464,8 @@ class Library extends DataObject {
 
 	public $allowUpdatingHolidaysFromILS;
 
+	private $_cloudLibraryScope;
+
 	/** @var MaterialsRequestFormFields[] */
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
@@ -476,8 +478,6 @@ class Library extends DataObject {
 	private $_holidays;
 	/** @var LibrarySideLoadScope[] */
 	private $_sideLoadScopes;
-	/** @var LibraryCloudLibraryScope[] */
-	private $_cloudLibraryScopes;
 	/** @var ILLItemType[] */
 	private $_interLibraryLoanItemTypes;
 	/** @var LibraryLink[] */
@@ -717,6 +717,15 @@ class Library extends DataObject {
 			$paypalPayflowSettings[$paypalPayflowSetting->id] = $paypalPayflowSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
+		$snapPaySetting = new SnapPaySetting();
+		$snapPaySetting->orderBy('name');
+		$snapPaySettings = [];
+		$snapPaySetting->find();
+		$snapPaySettings[-1] = 'none';
+		while ($snapPaySetting->fetch()) {
+			$snapPaySettings[$snapPaySetting->id] = $snapPaySetting->name;
+		}
 		require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
 		$squareSetting = new SquareSetting();
 		$squareSetting->orderBy('name');
@@ -767,7 +776,7 @@ class Library extends DataObject {
 			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
 		}
 
-		require_once  ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
 		$palaceProjectScope = new PalaceProjectScope();
 		$palaceProjectScope->orderBy('name');
 		$palaceProjectScopes = [];
@@ -862,8 +871,15 @@ class Library extends DataObject {
 			$twilioSettings[$twilioSetting->id] = $twilioSetting->name;
 		}
 
-		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
-		unset($cloudLibraryScopeStructure['libraryId']);
+		$cloudLibraryScopes = [];
+		$cloudLibraryScopes[-1] = 'none';
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->orderBy('name');
+		$cloudLibraryScope->find();
+		while ($cloudLibraryScope->fetch()) {
+			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
+		}
 
 		$readerName = new OverDriveDriver();
 		$readerName = $readerName->getReaderName();
@@ -1012,7 +1028,7 @@ class Library extends DataObject {
 						'default' => false,
 						'permissions' => ['Library Theme Configuration'],
 					],
-					'languageAndDisplayInHeader'=> [
+					'languageAndDisplayInHeader' => [
 						'property' => 'languageAndDisplayInHeader',
 						'type' => 'checkbox',
 						'label' => 'Show Language and Display Settings in Page Header',
@@ -2594,7 +2610,8 @@ class Library extends DataObject {
 							11 => 'PayPal Payflow',
 							12 => 'Square',
 							13 => 'Stripe',
-							14 => 'NCR'
+							14 => 'NCR',
+							15 => 'SnapPay'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2753,6 +2770,15 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
+					'snapPaySettingId' => [
+						'property' => 'snapPaySettingId',
+						'type' => 'enum',
+						'values' => $snapPaySettings,
+						'label' => 'SnapPay Settings',
+						'description' => 'The SnapPay settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
 					'squareSettingId' => [
 						'property' => 'squareSettingId',
 						'type' => 'enum',
@@ -2771,7 +2797,7 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'ncrSettingId'=> [
+					'ncrSettingId' => [
 						'property' => 'ncrSettingId',
 						'type' => 'enum',
 						'values' => $ncrSettings,
@@ -3031,7 +3057,7 @@ class Library extends DataObject {
 					],
 				],
 			],
-			
+
 			'exploreMoreBarSection' => [
 				'property' => 'exploreMoreBarSection',
 				'type' => 'section',
@@ -3615,22 +3641,15 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Library Records included in Catalog'],
 				'properties' => [
-					'cloudLibraryScopes' => [
-						'property' => 'cloudLibraryScopes',
-						'type' => 'oneToMany',
-						'keyThis' => 'libraryId',
-						'keyOther' => 'libraryId',
-						'subObjectType' => 'LibraryCloudLibraryScope',
-						'structure' => $cloudLibraryScopeStructure,
-						'label' => 'cloudLibrary Scopes',
-						'description' => 'The scopes that apply to this library',
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => true,
+					'cloudLibraryScope' => [
+						'property' => 'cloudLibraryScope',
+						'type' => 'enum',
+						'values' => $cloudLibraryScopes,
+						'label' => 'cloudLibrary Scope',
+						'description' => 'The cloudLibrary scope to use',
+						'hideInLists' => true,
+						'default' => -1,
 						'forcesReindex' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
 					],
 				],
 			],
@@ -3787,7 +3806,7 @@ class Library extends DataObject {
 					],
 				],
 			],
-			
+
 			'summonSection' => [
 				'property' => 'summonSection',
 				'type' => 'section',
@@ -3814,9 +3833,6 @@ class Library extends DataObject {
 					],
 				],
 			],
-
-
-
 
 
 			'casSection' => [
@@ -3880,7 +3896,7 @@ class Library extends DataObject {
 				'renderAsHeading' => false,
 				'permissions' => ['Library ILS Connection', 'Library Holidays'],
 				'properties' => [
-					'allowUpdatingHolidaysFromILS' =>[
+					'allowUpdatingHolidaysFromILS' => [
 						'property' => 'allowUpdatingHolidaysFromILS',
 						'type' => 'checkbox',
 						'label' => 'Automatically update holidays from the ILS',
@@ -4114,15 +4130,15 @@ class Library extends DataObject {
 		return $this->allowMasqueradeMode;
 	}
 
-	public function getSSORestrictionStatus():int {
-		if($this->ssoSettingId > 0) {
+	public function getSSORestrictionStatus(): int {
+		if ($this->ssoSettingId > 0) {
 			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 			$ssoSettings = new SSOSetting();
 			$ssoSettings->id = $this->ssoSettingId;
-			if($ssoSettings->find(true)) {
+			if ($ssoSettings->find(true)) {
 				try {
 					return empty($ssoSettings->restrictByIP) ? 0 : 1;
-				}catch (Exception $e) {
+				} catch (Exception $e) {
 					// not setup yet
 				}
 			}
@@ -4274,7 +4290,6 @@ class Library extends DataObject {
 	}
 
 
-
 	public function __get($name) {
 		if ($name == "holidays") {
 			return $this->getHolidays();
@@ -4294,8 +4309,8 @@ class Library extends DataObject {
 			return $this->getCombinedResultSections();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
-		} elseif ($name == 'cloudLibraryScopes') {
-			return $this->getCloudLibraryScopes();
+		} elseif ($name == 'cloudLibraryScope') {
+			return $this->getCloudLibraryScope();
 		} elseif ($name == 'interLibraryLoanItemTypes') {
 			return $this->getILLItemTypes();
 		} else {
@@ -4322,9 +4337,9 @@ class Library extends DataObject {
 			$this->_combinedResultSections = $value;
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
-		} elseif ($name == 'cloudLibraryScopes') {
-			$this->_cloudLibraryScopes = $value;
-		}  elseif ($name == 'interLibraryLoanItemTypes') {
+		} elseif ($name == 'cloudLibraryScope') {
+			$this->_cloudLibraryScope = $value;
+		} elseif ($name == 'interLibraryLoanItemTypes') {
 			$this->_interLibraryLoanItemTypes = $value;
 		} else {
 			parent::__set($name, $value);
@@ -4547,7 +4562,7 @@ class Library extends DataObject {
 	/**
 	 * @return LibraryLink[]
 	 */
-	public function getLibraryLinks() : array {
+	public function getLibraryLinks(): array {
 		if (!isset($this->_libraryLinks)) {
 			$this->_libraryLinks = [];
 			if (!empty($this->libraryId)) {
@@ -4563,29 +4578,53 @@ class Library extends DataObject {
 		return $this->_libraryLinks;
 	}
 
-	/**
-	 * @return LibraryCloudLibraryScope[]|null
-	 */
-	public function getCloudLibraryScopes(): ?array {
-		if (!isset($this->_cloudLibraryScopes)) {
-			$this->_cloudLibraryScopes = [];
-			if (!empty($this->libraryId)) {
-				$cloudLibraryScope = new LibraryCloudLibraryScope();
-				$cloudLibraryScope->libraryId = $this->libraryId;
-				if ($cloudLibraryScope->find()) {
-					while ($cloudLibraryScope->fetch()) {
-						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
-					}
+	/** @var CloudLibraryScope */
+	public function getCloudLibraryScope() {
+		if ($this->_cloudLibraryScope == null && $this->libraryId) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+			$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$libraryCloudLibraryScope->libraryId = $this->libraryId;
+			if ($libraryCloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+				$cloudLibraryScope = new CloudLibraryScope();
+				$cloudLibraryScope->id = $libraryCloudLibraryScope->scopeId;
+				if ($cloudLibraryScope->find(true)) {
+					$this->_cloudLibraryScope = $cloudLibraryScope->id;
 				}
 			}
 		}
-		return $this->_cloudLibraryScopes;
+		return $this->_cloudLibraryScope;
 	}
 
 	public function saveCloudLibraryScopes() {
-		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
-			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'libraryId');
-			unset($this->_cloudLibraryScopes);
+		if (isset ($this->_cloudLibraryScope)) {
+			$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$libraryCloudLibraryScope->libraryId = $this->libraryId;
+			$libraryCloudLibraryScope->find(true);
+
+			$obj = $this->_cloudLibraryScope;
+			/** @var DataObject $obj */
+			if ($obj->_deleteOnSave) {
+				if ($obj->getPrimaryKeyValue() > 0) {
+					$obj->delete();
+				}
+			} else {
+				if ($libraryCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$libraryCloudLibraryScope->scopeId = $this->_cloudLibraryScope;
+					$libraryCloudLibraryScope->update();
+				}
+			}
+
+			// cleanup other scopes libraries is assigned to
+			$unassignedLibraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$unassignedLibraryCloudLibraryScope->libraryId = $this->libraryId;
+			$unassignedLibraryCloudLibraryScope->find();
+			while ($unassignedLibraryCloudLibraryScope->fetch()) {
+				if ($unassignedLibraryCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$unassignedLibraryCloudLibraryScope->delete();
+				}
+			}
+			unset($this->_cloudLibraryScope);
 		}
 	}
 
@@ -4616,19 +4655,19 @@ class Library extends DataObject {
 
 	public function saveThemes() {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
-			foreach($this->_themes as $obj) {
+			foreach ($this->_themes as $obj) {
 				/** @var DataObject $obj */
-				if($obj->_deleteOnSave) {
+				if ($obj->_deleteOnSave) {
 					if ($obj->getPrimaryKeyValue() > 0) {
 						$obj->delete();
 					}
 				} else {
 					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
-						if($obj->{$obj->__primaryKey} <= 0) {
+						if ($obj->{$obj->__primaryKey} <= 0) {
 							$obj->libraryId = $this->{$this->__primaryKey};
 							$obj->insert();
 						} else {
-							if($obj->hasChanges()) {
+							if ($obj->hasChanges()) {
 								$obj->update();
 							}
 						}
@@ -4674,7 +4713,7 @@ class Library extends DataObject {
 	/**
 	 * @return LibraryCombinedResultSection[]
 	 */
-	public function getCombinedResultSections() : array {
+	public function getCombinedResultSections(): array {
 		if (!isset($this->_combinedResultSections)) {
 			$this->_combinedResultSections = [];
 			if (!empty($this->libraryId)) {
@@ -4788,76 +4827,76 @@ class Library extends DataObject {
 		return $this->_groupedWorkDisplaySettings;
 	}
 
-    protected $_eventFacetSettings = null;
+	protected $_eventFacetSettings = null;
 
-    /** @return LibraryEventsSetting */
-    public function getEventFacetSettings() {
-        if ($this->_eventFacetSettings == null) {
-            try {
-                require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-                $eventsFacetSetting = new LibraryEventsSetting();
-                $eventsFacetSetting->libraryId = $this->libraryId;
-                if ($eventsFacetSetting->find(true)) {
-                    $this->_eventFacetSettings = $eventsFacetSetting;
-                }
+	/** @return LibraryEventsSetting */
+	public function getEventFacetSettings() {
+		if ($this->_eventFacetSettings == null) {
+			try {
+				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+				$eventsFacetSetting = new LibraryEventsSetting();
+				$eventsFacetSetting->libraryId = $this->libraryId;
+				if ($eventsFacetSetting->find(true)) {
+					$this->_eventFacetSettings = $eventsFacetSetting;
+				}
 
-            } catch (Exception $e) {
-                global $logger;
-                $logger->log('Error loading event facet settings ' . $e, Logger::LOG_ERROR);
-            }
-        }
-        return $this->_eventFacetSettings;
-    }
+			} catch (Exception $e) {
+				global $logger;
+				$logger->log('Error loading event facet settings ' . $e, Logger::LOG_ERROR);
+			}
+		}
+		return $this->_eventFacetSettings;
+	}
 
-    protected $_openArchivesFacetSettings = null;
+	protected $_openArchivesFacetSettings = null;
 
-    /** @return OpenArchivesFacetGroup */
-    public function getOpenArchivesFacetSettings() {
-        if ($this->_openArchivesFacetSettings == null) {
-            try {
-                $searchLibrary = new Library();
-                $searchLibrary->libraryId = $this->libraryId;
-                if ($searchLibrary->find(true)){
-                    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
-                    $openArchivesFacetSetting = new OpenArchivesFacetGroup();
-                    $openArchivesFacetSetting->id = $searchLibrary->openArchivesFacetSettingId;
-                    if ($openArchivesFacetSetting->find(true)) {
-                        $this->_openArchivesFacetSettings = $openArchivesFacetSetting;
-                    }
-                }
+	/** @return OpenArchivesFacetGroup */
+	public function getOpenArchivesFacetSettings() {
+		if ($this->_openArchivesFacetSettings == null) {
+			try {
+				$searchLibrary = new Library();
+				$searchLibrary->libraryId = $this->libraryId;
+				if ($searchLibrary->find(true)) {
+					require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
+					$openArchivesFacetSetting = new OpenArchivesFacetGroup();
+					$openArchivesFacetSetting->id = $searchLibrary->openArchivesFacetSettingId;
+					if ($openArchivesFacetSetting->find(true)) {
+						$this->_openArchivesFacetSettings = $openArchivesFacetSetting;
+					}
+				}
 
-            } catch (Exception $e) {
-                global $logger;
-                $logger->log('Error loading Open Archives facet settings ' . $e, Logger::LOG_ERROR);
-            }
-        }
-        return $this->_openArchivesFacetSettings;
-    }
+			} catch (Exception $e) {
+				global $logger;
+				$logger->log('Error loading Open Archives facet settings ' . $e, Logger::LOG_ERROR);
+			}
+		}
+		return $this->_openArchivesFacetSettings;
+	}
 
-    protected $_websiteFacetSettings = null;
+	protected $_websiteFacetSettings = null;
 
-    /** @return WebsiteFacetGroup */
-    public function getWebsiteFacetSettings() {
-        if ($this->_websiteFacetSettings == null) {
-            try {
-                $searchLibrary = new Library();
-                $searchLibrary->libraryId = $this->libraryId;
-                if ($searchLibrary->find(true)){
-                    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
-                    $websiteFacetSetting = new WebsiteFacetGroup();
-                    $websiteFacetSetting->id = $searchLibrary->websiteIndexingFacetSettingId;
-                    if ($websiteFacetSetting->find(true)) {
-                        $this->_websiteFacetSettings = $websiteFacetSetting;
-                    }
-                }
+	/** @return WebsiteFacetGroup */
+	public function getWebsiteFacetSettings() {
+		if ($this->_websiteFacetSettings == null) {
+			try {
+				$searchLibrary = new Library();
+				$searchLibrary->libraryId = $this->libraryId;
+				if ($searchLibrary->find(true)) {
+					require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
+					$websiteFacetSetting = new WebsiteFacetGroup();
+					$websiteFacetSetting->id = $searchLibrary->websiteIndexingFacetSettingId;
+					if ($websiteFacetSetting->find(true)) {
+						$this->_websiteFacetSettings = $websiteFacetSetting;
+					}
+				}
 
-            } catch (Exception $e) {
-                global $logger;
-                $logger->log('Error loading website facet settings ' . $e, Logger::LOG_ERROR);
-            }
-        }
-        return $this->_websiteFacetSettings;
-    }
+			} catch (Exception $e) {
+				global $logger;
+				$logger->log('Error loading website facet settings ' . $e, Logger::LOG_ERROR);
+			}
+		}
+		return $this->_websiteFacetSettings;
+	}
 
 	protected $_layoutSettings = null;
 
@@ -5070,6 +5109,8 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
+			'enableAspenMaterialsRequest' => false,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5126,8 +5167,8 @@ class Library extends DataObject {
 		$hasIlsInbox = false;
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		if($catalog != null) {
-			if($this->enableForgotPasswordLink) {
+		if ($catalog != null) {
+			if ($this->enableForgotPasswordLink) {
 				$forgotPasswordType = $catalog->getForgotPasswordType();
 			}
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
@@ -5135,7 +5176,7 @@ class Library extends DataObject {
 		}
 
 		$accountProfile = $this->getAccountProfile();
-		if($accountProfile != false) {
+		if ($accountProfile != false) {
 			$ils = $accountProfile->ils;
 		}
 
@@ -5190,10 +5231,48 @@ class Library extends DataObject {
 			}
 		}
 
+		if ($this->showAlternateLibraryCard) {
+			$apiInfo['alternateLibraryCardConfig'] =
+				[
+					'alternateLibraryCardLabel' => $this->alternateLibraryCardLabel,
+					'alternateLibraryCardFormMessage' => $this->alternateLibraryCardFormMessage,
+					'alternateLibraryCardStyle' => $this->alternateLibraryCardStyle,
+					'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
+					'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel
+				];
+		}
+
+		$apiInfo['useAlternateCardForCloudLibrary'] = 0;
+		require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+		$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+		$libraryCloudLibraryScope->libraryId = $this->libraryId;
+		if ($libraryCloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+			$cloudLibraryScope = new CloudLibraryScope();
+			$cloudLibraryScope->id = $libraryCloudLibraryScope->scopeId;
+			if ($cloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+				$cloudLibrarySetting = new CloudLibrarySetting();
+				$cloudLibrarySetting->id = $cloudLibraryScope->settingId;
+				if ($cloudLibrarySetting->find(true)) {
+					$apiInfo['useAlternateCardForCloudLibrary'] = $cloudLibrarySetting->useAlternateLibraryCard;
+				}
+			}
+		}
+
+		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$apiInfo['enableAspenMaterialsRequest'] = MaterialsRequest::enableAspenMaterialsRequest();
+		}
+
+		$apiInfo['materialRequestType'] = $this->enableMaterialsRequest;
+		$apiInfo['displayMaterialsRequest'] = $this->displayMaterialsRequestToPublic;
+		$apiInfo['materialsRequestLinkUrl'] = $this->externalMaterialsRequestUrl;
+
 		return $apiInfo;
 	}
 
-	public function updateStructureForEditingObject($structure) : array {
+	public function updateStructureForEditingObject($structure): array {
 		//Get locations for the active library and apply those to third party registration locations
 		$location = new Location();
 		$location->libraryId = $this->libraryId;
@@ -5226,14 +5305,8 @@ class Library extends DataObject {
 			$this->hooplaScopeId = -1;
 			$this->overDriveScopeId = -1;
 			$this->palaceProjectScopeId = -1;
-		}else{
-			$this->getCloudLibraryScopes();
-			$index = -1;
-			foreach ($this->_cloudLibraryScopes as $subObject) {
-				$subObject->id = $index;
-				unset($subObject->libraryId);
-				$index--;
-			}
+		} else {
+			$this->getCloudLibraryScope();
 			$this->getSideLoadScopes();
 			$index = -1;
 			foreach ($this->_sideLoadScopes as $subObject) {
@@ -5336,5 +5409,46 @@ class Library extends DataObject {
 			}
 		}
 		return $this->_accountProfile;
+	}
+
+	private $_mainLocation = false;
+
+	public function getMainLocation() {
+		if ($this->_mainLocation === false) {
+			$location = new Location();
+			$location->libraryId = $this->libraryId;
+			$location->orderBy('isMainBranch desc');
+			if ($location->find(true)) {
+				$this->_mainLocation = $location;
+			} else {
+				$this->_mainLocation = null;
+			}
+		}
+		return $this->_mainLocation;
+	}
+
+	public function getAlternateLibraryCardOptions() {
+		$useAlternateLibraryCardForCloudLibrary = false;
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $this->getCloudLibraryScope();
+		if ($cloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+			$cloudLibrarySettings = new CloudLibrarySetting();
+			$cloudLibrarySettings->id = $cloudLibraryScope->settingId;
+			if ($cloudLibrarySettings->find(true)) {
+				$useAlternateLibraryCardForCloudLibrary = $cloudLibrarySettings->useAlternateLibraryCard;
+			}
+		}
+
+		return [
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
+			'alternateLibraryCardFormMessage' => $this->alternateLibraryCardFormMessage,
+			'alternateLibraryCardLabel' => $this->alternateLibraryCardLabel,
+			'alternateLibraryCardStyle' => $this->alternateLibraryCardStyle,
+			'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel,
+			'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
+			'useAlternateLibraryCardForCloudLibrary' => $useAlternateLibraryCardForCloudLibrary,
+		];
 	}
 }

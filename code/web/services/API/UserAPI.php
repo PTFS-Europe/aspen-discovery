@@ -94,7 +94,12 @@ class UserAPI extends AbstractAPI {
 					'getAppPreferencesForUser',
 					'getInbox',
 					'markMessageAsRead',
-					'markMessageAsUnread'
+					'markMessageAsUnread',
+					'updateAlternateLibraryCard',
+					'getMaterialsRequests',
+					'getMaterialsRequestDetails',
+					'createMaterialsRequest',
+					'cancelMaterialsRequest'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -113,7 +118,7 @@ class UserAPI extends AbstractAPI {
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
+			if (!in_array($method, ['getUserForApiCall', 'checkInILSItem']) && method_exists($this, $method)) {
 				$result = [
 					'result' => $this->$method(),
 				];
@@ -993,6 +998,12 @@ class UserAPI extends AbstractAPI {
 				1 => $userData->fines,
 				'isPublicFacing' => true,
 			]);
+
+			$userData->alternateLibraryCard = $user->alternateLibraryCard;
+
+			$userData->canSuggestMaterials = $user->canSuggestMaterials();
+
+			$userData->isStaff = $user->isStaff();
 
 			return [
 				'success' => true,
@@ -3833,7 +3844,8 @@ class UserAPI extends AbstractAPI {
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function deleteSelectedFromReadingHistory(): array {
+	function
+	deleteSelectedFromReadingHistory(): array {
 		if(isset($_REQUEST['selected'])) {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
@@ -3958,6 +3970,7 @@ class UserAPI extends AbstractAPI {
 					unset($paymentArray['deluxeSecurityId']);
 					unset($paymentArray['deluxeRemittanceId']);
 					unset($paymentArray['aciToken']);
+					unset($paymentArray['snappayToken']);
 					unset($paymentArray['stripeToken']);
 					unset($paymentArray['squareToken']);
 					$result['payment'] = $paymentArray;
@@ -4639,9 +4652,13 @@ class UserAPI extends AbstractAPI {
 	/**
 	 * @return bool|User
 	 */
-	function getUserForApiCall() {
+	function getUserForApiCall($patronBarcode = null, $patronPassword = null) {
 		if ($this->context == 'internal') {
-			return UserAccount::getActiveUserObj();
+			if ($patronBarcode == null && $patronPassword == null) {
+				return UserAccount::getActiveUserObj();
+			}else{
+				return UserAccount::validateAccount($patronBarcode, $patronPassword);
+			}
 		} else {
 			$user = false;
 			if ($this->getLiDAVersion() === "v22.04.00") {
@@ -4703,6 +4720,9 @@ class UserAPI extends AbstractAPI {
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
 					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
 					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
+					$account[$linkedAccount->id]['alternateLibraryCard'] = $linkedAccount->getAlternateLibraryCardBarcode();
+					$account[$linkedAccount->id]['alternateLibraryCardPassword'] = $linkedAccount->getAlternateLibraryCardPasswordOrPin();
+					$account[$linkedAccount->id]['alternateLibraryCardOptions'] = $linkedAccount->getHomeLibrary()->getAlternateLibraryCardOptions();
 				}
 				return [
 					'success' => true,
@@ -5739,10 +5759,41 @@ class UserAPI extends AbstractAPI {
 		return ['success' => false];
 	}
 
-	function checkoutILSItem(): array {
-		$user = $this->getUserForApiCall();
+
+	function checkoutILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
+		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
+			//For self check we don't require the pin, use find new user
+			//Call find new user just to be sure that all patron information is up to date.
+			$user = UserAccount::findNewUser($patronBarcode, null);
+			if (!$user) {
+				//This user no longer exists? return an error?
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error checking out title',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find the specified user',
+						'isAdminFacing' => true,
+					]),
+				];
+			}
+		}else{
+			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
+		}
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationId']))) {
+			if ($itemBarcode == null) {
+				if (!empty($_REQUEST['barcode'])) {
+					$itemBarcode = $_REQUEST['barcode'];
+				}
+			}
+			if ($activeLocationId == null) {
+				if (!empty($_REQUEST['locationId'])) {
+					$activeLocationId = $_REQUEST['locationId'];
+				}
+			}
+			if (empty($itemBarcode) || empty($activeLocationId)) {
 				return [
 					'success' => false,
 					'title' => 'Error',
@@ -5750,14 +5801,14 @@ class UserAPI extends AbstractAPI {
 				];
 			} else {
 				$location = new Location();
-				$location->locationId = $_REQUEST['locationId'];
+				$location->locationId = $activeLocationId;
 				if($location->find(true)) {
 					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 					$scoSettings = new AspenLiDASelfCheckSetting();
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
-							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
+							$result = $user->checkoutItem($itemBarcode, $location);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
@@ -5776,6 +5827,94 @@ class UserAPI extends AbstractAPI {
 							'success' => false,
 							'title' => 'Error',
 							'message' => 'Self-checkout settings not found for this location',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Location not found with given id',
+					];
+				}
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function checkinILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
+		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
+			//For self check we don't require the pin, use find new user
+			//Call find new user just to be sure that all patron information is up to date.
+			$user = UserAccount::findNewUser($patronBarcode, null);
+			if (!$user) {
+				//This user no longer exists? return an error?
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error checking in title',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find the specified user',
+						'isAdminFacing' => true,
+					]),
+				];
+			}
+		}else{
+			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
+		}
+		if ($user && !($user instanceof AspenError)) {
+			if ($itemBarcode == null) {
+				if (!empty($_REQUEST['barcode'])) {
+					$itemBarcode = $_REQUEST['barcode'];
+				}
+			}
+			if ($activeLocationId == null) {
+				if (!empty($_REQUEST['locationId'])) {
+					$activeLocationId = $_REQUEST['locationId'];
+				}
+			}
+			if (empty($itemBarcode) || empty($activeLocationId)) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Barcode and location id must be provided',
+				];
+			} else {
+				$location = new Location();
+				$location->locationId = $activeLocationId;
+				if($location->find(true)) {
+					//We still want the self check settings to give an extra check that the functionality should be enabled
+					// and to allow control over where the title should be returned.
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+					$scoSettings = new AspenLiDASelfCheckSetting();
+					$scoSettings->id = $location->lidaSelfCheckSettingId;
+					if($scoSettings->find(true)) {
+						if($scoSettings->isEnabled) {
+							$result = $user->checkInItem($itemBarcode, $location);
+							return [
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'itemData' => $result['itemData']
+							];
+						} else {
+							return [
+								'success' => false,
+								'title' => 'Error',
+								'message' => 'Self-check not enabled for this location',
+							];
+						}
+					} else {
+						return [
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Self-check settings not found for this location',
 						];
 					}
 				} else {
@@ -5925,5 +6064,316 @@ class UserAPI extends AbstractAPI {
 				'message' => 'Unable to validate user',
 			];
 		}
+	}
+
+	function updateAlternateLibraryCard(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$alternateLibraryCard = $_REQUEST['alternateLibraryCard'] ?? null;
+			$alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'] ?? null;
+			$deleteAlternateLibraryCard = $_REQUEST['deleteAlternateLibraryCard'] ?? false;
+			if(!$deleteAlternateLibraryCard || $deleteAlternateLibraryCard === "false") {
+				if ($alternateLibraryCard) {
+					$user->alternateLibraryCard = $alternateLibraryCard;
+				}
+
+				if ($alternateLibraryCardPassword) {
+					$user->alternateLibraryCardPassword = $alternateLibraryCardPassword;
+				}
+			} else {
+				$user->alternateLibraryCard = '';
+				$user->alternateLibraryCardPassword = '';
+			}
+
+			if($user->update()) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Updated', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Your alternate library card has been updated.', 'isPublicFacing' => true]),
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Unable to update alternate library card at this time.', 'isPublicFacing' => true]),
+				];
+			}
+
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function getMaterialsRequests(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			return [
+				'success' => true,
+				'title' => 'Success',
+				'message' => 'Found all materials requests for user',
+				'requests' => $user->getMaterialsRequests(),
+				'maxActiveRequests' => $user->getNumMaterialsRequestsMaxActive(),
+				'maxRequestsPerYear' => $user->getNumMaterialsRequestsMaxPerYear(),
+				'requestsThisYear' => $user->getNumMaterialsRequestsRequestsForYear(),
+				'openRequests' => $user->getNumOpenMaterialsRequests()
+			];
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
+	}
+
+	function getMaterialsRequestDetails(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Please provide an id of the materials request to view.',
+				];
+			}
+
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+
+			$id = $_REQUEST['id'];
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->id = $id;
+			if($materialsRequest->find(true)) {
+				$request = $materialsRequest->getDetails($user);
+				return [
+					'success' => true,
+					'title' => 'Details for Materials Request',
+					'request' => $request,
+				];
+			}
+
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
+	}
+
+	function createMaterialsRequest(): array {
+		if(empty($_REQUEST['format'])) {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'No format was specified',
+			];
+		}
+		$format = $_REQUEST['format'];
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			global $library;
+			$openRequests = $user->getNumOpenMaterialsRequests();
+			$maxActiveRequests = $user->getNumMaterialsRequestsMaxActive();
+			$maxRequestsPerYear = $user->getNumMaterialsRequestsMaxPerYear();
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->createdBy = $user->id;
+			$statusQuery = new MaterialsRequestStatus();
+			$homeLibrary = $user->getHomeLibrary();
+			if (is_null($homeLibrary)) {
+				$homeLibrary = $library;
+			}
+			$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+			$materialsRequest->find();
+			if($materialsRequest->getNumResults() >= $maxActiveRequests) {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Unable to complete request', 'isPublicFacing' => true]),
+					'message' => translate([
+						'text' => "You've already reached your maximum limit of %1% materials requests open at one time. Once we've processed your existing materials requests, you'll be able to submit again.",
+						1 => $maxActiveRequests,
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$requestsThisYear = $user->getNumMaterialsRequestsRequestsForYear();
+			if($requestsThisYear >= $maxRequestsPerYear) {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Unable to complete request', 'isPublicFacing' => true]),
+					'message' => translate([
+						'text' => "You've already reached your maximum limit of %1% materials requests per year.",
+						1 => $maxRequestsPerYear,
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->format = $format;
+			$materialsRequest->phone = isset($_REQUEST['phone']) ? substr(strip_tags($_REQUEST['phone']), 0, 15) : '';
+			$materialsRequest->email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
+			$materialsRequest->title = isset($_REQUEST['title']) ? strip_tags($_REQUEST['title']) : '';
+			$materialsRequest->season = isset($_REQUEST['season']) ? strip_tags($_REQUEST['season']) : '';
+			$materialsRequest->magazineTitle = isset($_REQUEST['magazineTitle']) ? strip_tags($_REQUEST['magazineTitle']) : '';
+			$materialsRequest->magazineDate = isset($_REQUEST['magazineDate']) ? strip_tags($_REQUEST['magazineDate']) : '';
+			$materialsRequest->magazineVolume = isset($_REQUEST['magazineVolume']) ? strip_tags($_REQUEST['magazineVolume']) : '';
+			$materialsRequest->magazineNumber = isset($_REQUEST['magazineNumber']) ? strip_tags($_REQUEST['magazineNumber']) : '';
+			$materialsRequest->magazinePageNumbers = isset($_REQUEST['magazinePageNumbers']) ? strip_tags($_REQUEST['magazinePageNumbers']) : '';
+			$materialsRequest->author = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
+			$materialsRequest->ageLevel = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
+			$materialsRequest->bookType = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
+			$materialsRequest->isbn = isset($_REQUEST['isbn']) ? substr(strip_tags($_REQUEST['isbn']), 0, 15) : '';
+			$materialsRequest->upc = isset($_REQUEST['upc']) ? strip_tags($_REQUEST['upc']) : '';
+			$materialsRequest->issn = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
+			$materialsRequest->oclcNumber = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
+			$materialsRequest->publisher = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
+			$materialsRequest->publicationYear = empty($_REQUEST['publicationYear']) ? '' : substr(strip_tags($_REQUEST['publicationYear']), 0, 4);
+			$materialsRequest->about = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
+			$materialsRequest->comments = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
+			$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0 : $_REQUEST['placeHoldWhenAvailable'];
+			$materialsRequest->holdPickupLocation = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
+			$materialsRequest->bookmobileStop = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
+			$materialsRequest->illItem = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+
+			$materialsRequest->libraryId = $homeLibrary->libraryId;
+
+			$formatObject = $materialsRequest->getFormatObject();
+			if (!empty($formatObject->id)) {
+				$materialsRequest->formatId = $formatObject->id;
+			}
+
+			if (isset($_REQUEST['ebookFormat']) && $formatObject->hasSpecialFieldOption('Ebook format')) {
+				$materialsRequest->subFormat = strip_tags($_REQUEST['ebookFormat']);
+
+			} elseif (isset($_REQUEST['eaudioFormat']) && $formatObject->hasSpecialFieldOption('Eaudio format')) {
+				$materialsRequest->subFormat = strip_tags($_REQUEST['eaudioFormat']);
+			}
+
+			if (isset($_REQUEST['abridged'])) {
+				if ($_REQUEST['abridged'] == 'abridged') {
+					$materialsRequest->abridged = 1;
+				} elseif ($_REQUEST['abridged'] == 'unabridged') {
+					$materialsRequest->abridged = 0;
+				} else {
+					$materialsRequest->abridged = 2; //Not applicable
+				}
+			}
+
+			$defaultStatus = new MaterialsRequestStatus();
+			$defaultStatus->isDefault = 1;
+			$defaultStatus->libraryId = $homeLibrary->libraryId;
+			if (!$defaultStatus->find(true)) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => translate([
+						'text' => 'There was an error submitting your materials request, could not determine the default status.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$materialsRequest->status = $defaultStatus->id;
+			$materialsRequest->dateCreated = time();
+			$materialsRequest->createdBy = $user->id;
+			$materialsRequest->dateUpdated = time();
+
+			if($materialsRequest->insert()) {
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => translate([
+						'text' => 'Your request for %1% by %2% was submitted successfully.',
+						1 => $materialsRequest->title,
+						2 => $materialsRequest->author,
+						'isPublicFacing' => true,
+					]),
+					'summary' => translate(['text' => 'You have used %1% of your %2% yearly materials requests. We also limit patrons to %3% active materials requests at a time. You currently have %4% active materials requests.',
+						1 => $requestsThisYear,
+						2 => $maxRequestsPerYear,
+						3 => $maxActiveRequests,
+						4 => $openRequests,
+						'isPublicFacing' => true])
+				];
+			}
+
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => translate([
+					'text' => 'There was an error submitting your materials request, could not determine the default status.',
+					'isPublicFacing' => true,
+				]),
+			];
+
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
+	}
+
+	function cancelMaterialsRequest(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Please provide an id of the materials request to cancel.',
+				];
+			}
+
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+
+			$id = $_REQUEST['id'];
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->id = $id;
+			$materialsRequest->createdBy = UserAccount::getActiveUserId();
+			if ($materialsRequest->find(true)) {
+				$homeLibrary = $user->getHomeLibrary();
+				if (is_null($homeLibrary)) {
+					global $library;
+					$homeLibrary = $library;
+				}
+
+				require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+				$cancelledStatus = new MaterialsRequestStatus();
+				$cancelledStatus->isPatronCancel = 1;
+				$cancelledStatus->libraryId = $homeLibrary->libraryId;
+				$cancelledStatus->find(true);
+
+				$materialsRequest->dateUpdated = time();
+				$materialsRequest->status = $cancelledStatus->id;
+				if ($materialsRequest->update()) {
+					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
+					return [
+						'success' => true,
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Your request was cancelled successfully.', 'isPublicFacing' => true]),
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Could not cancel the request, error during update.', 'isPublicFacing' => true]),
+					];
+				}
+			}
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
 	}
 }

@@ -81,6 +81,11 @@ try {
 	if (strlen($userAgentString) > 512) {
 		$userAgentString = substr($userAgentString, 0, 512);
 	}
+	if (isSpammyUserAgent($userAgentString)) {
+		http_response_code(404);
+		echo("<html><head><title>Page Not Found</title></head><body><h1>404</h1> <p>We're sorry, but the page you are looking for can't be found.</p></body></html>");
+		die();
+	}
 	$userAgent->userAgent = $userAgentString;
 	if ($userAgent->find(true)) {
 		$userAgentId = $userAgent->id;
@@ -408,32 +413,22 @@ function getValidServerNames(): array {
 
 function getGitBranch() {
 	global $interface;
-	global $configArray;
 
-	$gitName = $configArray['System']['gitVersionFile'];
-	$branchName = 'Unknown';
-	$branchNameWithCommit = 'Unknown';
-	if ($gitName == 'HEAD') {
-		$stringFromFile = file(ROOT_DIR . '/../../.git/HEAD');
-		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
-		$branchName = trim($explodedString[2]); //get the one that is always the branch name
-		$branchNameWithCommit = $branchName;
-	} else {
-		if (file_exists(ROOT_DIR . '/../../.git/FETCH_HEAD')) {
-			$stringFromFile = file(ROOT_DIR . '/../../.git/FETCH_HEAD');
-			if (!empty($stringFromFile)) {
-				$stringFromFile = $stringFromFile[0]; //get the string from the array
-				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					$branchName = $matches[2]; //get the branch name
-					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0, 7) . ')'; //get the branch name
-				}
-			}
-		} else {
-			$branchName = 'Unknown';
-			$branchNameWithCommit = 'Unknown';
+	$branchName = '';
+	$branchNameWithCommit = '';
+
+	$files = [];
+	foreach (glob('release_notes/*.MD') as $filename) {
+		if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $filename)) {
+			$tmp = str_replace('.MD', '', $filename);
+			$tmp = str_replace('release_notes/', '', $tmp);
+			$files[] = $tmp;
 		}
 	}
+	asort($files);
+
+	$branchName = end($files);
+	$branchNameWithCommit = end($files);
 
 	if (!empty($interface)) {
 		$interface->assign('gitBranch', $branchName);
@@ -441,4 +436,52 @@ function getGitBranch() {
 	}
 
 	return $branchName;
+}
+
+//Look for spammy user agents and kill them
+function isSpammyUserAgent($userAgentString): bool {
+	if (stripos($userAgentString, 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'PG_SLEEP') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'SELECT') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'SLEEP') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'ORDER BY') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'WAITFOR') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'nvOpzp') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'window.location') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'window.top') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'nslookup') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'if(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'now(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'sysdate()') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'sleep(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'cast(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'current_database') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'response.write') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'CONVERT(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'EXTRACTVALUE(') !== false) {
+		return true;
+	}
+	$termWithoutTags = strip_tags($userAgentString);
+	if ($termWithoutTags != $userAgentString) {
+		return true;
+	}
+	return false;
 }

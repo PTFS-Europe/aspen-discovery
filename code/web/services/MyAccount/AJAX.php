@@ -8662,4 +8662,13 @@ class MyAccount_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	public function getEnrolledCampaigns() {
+		$userId = UserAccount::getActiveUserId();
+		$enrolledCampaigns = Campaign::getUserEnrolledCampaigns($userId);
+		return [
+			'success' => true,
+			'numCampaigns' => count($enrolledCampaigns)
+		];
+	}
 }

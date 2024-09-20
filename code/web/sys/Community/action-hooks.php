@@ -18,7 +18,7 @@ add_action('after_object_insert', 'after_checkout_insert', function ($value) {
         return;
 
     while ($milestone->fetch()) {
-        if (_checkoutMilestoneProgressEntryExists($value, $milestone))
+        if (_milestoneProgressEntryObjectAlreadyExists($value, $milestone))
             return;
 
         $milestone->addMilestoneProgressEntry($value, $value->userId);
@@ -41,7 +41,7 @@ add_action('after_object_insert', 'after_hold_insert', function ($value) {
         return;
 
     while ($milestone->fetch()) {
-        if (_checkoutMilestoneProgressEntryExists($value, $milestone))
+        if (_milestoneProgressEntryObjectAlreadyExists($value, $milestone))
             return;
 
         $milestone->addMilestoneProgressEntry($value, $value->userId);
@@ -90,14 +90,15 @@ add_action('after_object_insert', 'after_work_review_insert', function ($value) 
 });
 
 /**
- * Checks if a checkout entry already exists in the ce_milestone_progress_entries table, for a specific milestone.
- * This check is required because a new checkout being added to the database may not actually be a new checkout.
+ * Checks if an object entry already exists in the ce_milestone_progress_entries table, for a specific milestone.
+ * This check is required because a some objects being added to the database may not actually be a instance.
+ * For example, for checkouts and holds, these may be purged from the database and re-fetched from the ILS.
  *
- * @param object $value The Checkout object containing the sourceId, recordId, and userId.
+ * @param object $value The object containing the sourceId, recordId, and userId.
  * @param Milestone $milestone The milestone object.
  * @return bool Returns true if an entry exists, false otherwise.
  */
-function _checkoutMilestoneProgressEntryExists($value, $milestone)
+function _milestoneProgressEntryObjectAlreadyExists($value, $milestone)
 {
     $milestoneProgressEntryCheck = new MilestoneProgressEntry();
     $milestoneProgressEntryCheck->initialize($milestone);

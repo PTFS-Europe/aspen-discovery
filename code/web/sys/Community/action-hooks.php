@@ -41,6 +41,9 @@ add_action('after_object_insert', 'after_hold_insert', function ($value) {
         return;
 
     while ($milestone->fetch()) {
+        if (_checkoutMilestoneProgressEntryExists($value, $milestone))
+            return;
+
         $milestone->addMilestoneProgressEntry($value, $value->userId);
     }
     return;

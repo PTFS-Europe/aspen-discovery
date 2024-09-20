@@ -167,6 +167,9 @@ class Milestone extends DataObject {
                 "milestoneUsersProgress" => $milestoneUsersProgress
             ]
         );
+
+        $milestoneUsersProgress->progress++;
+        $milestoneUsersProgress->update();
     }
 
     /**

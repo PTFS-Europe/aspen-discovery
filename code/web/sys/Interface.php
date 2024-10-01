@@ -627,6 +627,7 @@ class UInterface extends Smarty {
 		$this->assign('alwaysShowSearchResultsMainDetails', $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails);
 		$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 		$this->assign('showEditionCovers', $groupedWorkDisplaySettings->showEditionCovers);
+		$this->assign('separateItemsByEditionInWhereIsIt', $groupedWorkDisplaySettings->separateItemsByEditionInWhereIsIt);
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);
 		$this->assign('expirationNearMessage', $library->expirationNearMessage);
@@ -682,6 +683,7 @@ class UInterface extends Smarty {
 			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
 			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 			$this->assign('showEditionCovers', $groupedWorkDisplaySettings->showEditionCovers);
+			$this->assign('separateItemsByEditionInWhereIsIt', $groupedWorkDisplaySettings->separateItemsByEditionInWhereIsIt);
 		} else { // library only
 			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $library->showFavorites);
@@ -697,6 +699,7 @@ class UInterface extends Smarty {
 			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
 			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 			$this->assign('showEditionCovers', $groupedWorkDisplaySettings->showEditionCovers);
+			$this->assign('separateItemsByEditionInWhereIsIt', $groupedWorkDisplaySettings->separateItemsByEditionInWhereIsIt);
 		}
 		if ($showStaffView == 2) {
 			$showStaffView = UserAccount::isStaff();

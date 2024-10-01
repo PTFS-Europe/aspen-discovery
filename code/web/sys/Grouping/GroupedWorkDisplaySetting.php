@@ -31,6 +31,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $alwaysFlagNewTitles;
 	public $showRelatedRecordLabels;
 	public $showEditionCovers;
+	public $separateItemsByEditionInWhereIsIt;
 
 	//Contents of search
 	public $includeOutOfSystemExternalLinks;
@@ -266,6 +267,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'default' => true,
 								'hideInLists' => true,
 							],
+							'separateItemsByEditionInWhereIsIt' => [
+								'property' => 'separateItemsByEditionInWhereIsIt',
+								'type' => 'checkbox',
+								'label' => 'Show Editions in the Where is it popup',
+								'description' => 'Turn on to divide the Where is it popup table into edition sections so that edition information can be displayed. If Show Covers for Editions is toggled on, also include edition covers as thumbnails.',
+								'default' => false,
+								'hideInLists' => true
+							]
 						],
 					],
 					'searchFacetsSection' => [
@@ -921,6 +930,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		$defaultDisplaySettings->alwaysFlagNewTitles = false;
 		$defaultDisplaySettings->showRelatedRecordLabels = true;
 		$defaultDisplaySettings->showEditionCovers = true;
+		$defaultDisplaySettings->separateItemsByEditionInWhereIsIt = false;
 		$defaultDisplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
 		$defaultDisplaySettings->availabilityToggleLabelLocal = '';
 		$defaultDisplaySettings->availabilityToggleLabelAvailable = 'Available Now';

@@ -40,6 +40,7 @@ class WebBuilder_GrapesPage extends Action {
 		global $interface;
 
 		$title = $this->grapesPage->title;
+		$showTitleOnPage = $this->grapesPage->showTitleOnPage;
 		$interface->assign('id', $this->grapesPage->id);
 		$interface->assign('contents', $this->grapesPage->getFormattedContents());
 		$editButton = $this->generateEditPageUrl();
@@ -58,6 +59,7 @@ class WebBuilder_GrapesPage extends Action {
 		}
 		$interface->assign('templateContent', $templateContent);
 		$interface->assign('title', $title);
+		$interface->assign('showTitleOnPage', $showTitleOnPage);
 
 		$this->display('grapesPage.tpl', $title, '', false);
 	}
@@ -68,7 +70,7 @@ class WebBuilder_GrapesPage extends Action {
 
 	function generateEditPageUrl() {
 		$objectId = $this->grapesPage->id;
-		$templatesSelect - $this->grapesPage->templatesSelect;
+		$templatesSelect = $this->grapesPage->templatesSelect;
 		return '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $objectId . '&tempalteId=' . $templatesSelect;
 	}
 

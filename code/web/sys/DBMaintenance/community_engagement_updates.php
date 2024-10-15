@@ -89,7 +89,8 @@ function getCommunityEngagementUpdates() {
                     campaignId INT NOT NULL,
                     enrollmentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
                     unenrollmentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    completed TINYINT DEFAULT 0
+                    completed TINYINT DEFAULT 0,
+                    rewardGiven TINYINT DEFAULT 0
                 )ENGINE = InnoDB",
             ],
         ],

@@ -1370,10 +1370,11 @@ public class KohaExportMain {
 	}
 	private static int updateRecords(Connection dbConn, Connection kohaConn, String singleWorkId) {
 		int totalChanges = 0;
+		
 
 		try {
 			//Get the time the last extract was done
-			logger.info("Starting to load changed records from Koha using the Database connection");
+			logEntry.addNote("Starting to load changed records from Koha using the Database connection");
 			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			if (lastKohaExtractTime == 0) {
 				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;

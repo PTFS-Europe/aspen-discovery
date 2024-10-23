@@ -639,8 +639,10 @@ public class GroupedWorkIndexer {
 			*/
 
 			//Delete all grouped_work items, records, and variations, but leave the grouped work
+			logEntry.addNote("Deleting Grouped Work HERE");
 			removeItemsForWorkStmt.setLong(1, groupedWorkId);
 			removeItemsForWorkStmt.executeUpdate();
+			logEntry.addNote("FINISHED.");
 
 			removeVariationsForWorkStmt.setLong(1, groupedWorkId);
 			removeVariationsForWorkStmt.executeUpdate();

@@ -285,7 +285,7 @@ class Pay360_Client  {
 				'lgItemDetails' => [
 					'additionalReference' => 'LIB01',
 					'narrative' => mb_substr($fineDetails['reason'], 0, 50),
-					'fundCode' => 'LIB',
+					'fundCode' => 'MISC',
 				],
 				'customerInfo' => [
 					'customerString1' => mb_substr($fineDetails['message'], 0, 50),
